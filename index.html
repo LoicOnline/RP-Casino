@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Casino RP — Los Santos</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#080910;
+  --panel:#0f1119;
+  --card:#141720;
+  --card2:#1a1e2a;
+  --border:rgba(255,255,255,.07);
+  --border2:rgba(255,255,255,.12);
+  --cyan:#00e5ff;
+  --purple:#a855f7;
+  --pink:#ec4899;
+  --gold:#f59e0b;
+  --green:#10b981;
+  --red:#ef4444;
+  --orange:#f97316;
+  --text:#c8d3e8;
+  --dim:#4b5470;
+  --bright:#f1f5ff;
+  --display:'Bebas Neue',sans-serif;
+  --body:'Nunito',sans-serif;
+  --mono:'Share Tech Mono',monospace;
+  --r:14px;
+  --r2:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 70% 40% at 15% 0%,rgba(0,229,255,.09) 0%,transparent 55%),
+    radial-gradient(ellipse 55% 35% at 85% 100%,rgba(168,85,247,.11) 0%,transparent 55%);
+  color:var(--text);min-height:100vh;
+}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+
+/* ═══ LAYOUT ═══ */
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:210px;
+  background:rgba(9,10,17,.95);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:200;
+  backdrop-filter:blur(20px);
+}
+.sidebar-logo{
+  padding:24px 20px 20px;
+  border-bottom:1px solid var(--border);
+}
+.logo-title{
+  font-family:var(--display);
+  font-size:26px;letter-spacing:4px;
+  background:linear-gradient(90deg,var(--cyan),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.logo-sub{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:3px;margin-top:3px;text-transform:uppercase}
+.sidebar-nav{flex:1;padding:14px 10px;display:flex;flex-direction:column;gap:4px}
+.nav-item{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 12px;border-radius:10px;
+  font-family:var(--display);font-size:16px;letter-spacing:2px;
+  color:var(--dim);cursor:pointer;transition:all .2s;border:1px solid transparent;
+}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.nav-item.active{
+  background:linear-gradient(135deg,rgba(0,229,255,.12),rgba(168,85,247,.1));
+  border-color:rgba(0,229,255,.2);color:var(--cyan);
+}
+.nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.nav-sep{height:1px;background:var(--border);margin:8px 2px}
+.sidebar-foot{padding:14px 18px;border-top:1px solid var(--border);font-family:var(--mono);font-size:9px;color:var(--dim)}
+
+.main{margin-left:210px;min-height:100vh;padding:28px 32px}
+.page{display:none}
+.page.active{display:block}
+
+/* ═══ PAGE HEADER ═══ */
+.page-header{margin-bottom:24px}
+.page-title{
+  font-family:var(--display);font-size:40px;letter-spacing:4px;
+  background:linear-gradient(90deg,var(--cyan) 0%,var(--purple) 60%,var(--pink) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  line-height:1;
+}
+.page-desc{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:6px;letter-spacing:1.5px;text-transform:uppercase}
+
+/* ═══ CARDS ═══ */
+.card{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:var(--r);padding:18px 22px;
+}
+.card-title{
+  font-family:var(--mono);font-size:9px;color:var(--dim);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;
+}
+
+/* ═══ BUTTONS ═══ */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:10px 22px;border-radius:50px;
+  font-family:var(--display);font-size:15px;letter-spacing:1.5px;
+  border:none;cursor:pointer;transition:all .18s;white-space:nowrap;
+}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important}
+.btn-grad{
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  color:#000;
+  box-shadow:0 3px 16px rgba(0,229,255,.2);
+}
+.btn-grad:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,229,255,.3)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.btn-outline:hover:not(:disabled){border-color:rgba(0,229,255,.4);color:var(--cyan)}
+.btn-green{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.btn-green:hover:not(:disabled){background:rgba(16,185,129,.25)}
+.btn-red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-red:hover:not(:disabled){background:rgba(239,68,68,.25)}
+.btn-sm{padding:7px 16px;font-size:13px}
+.btn-xs{padding:5px 12px;font-size:12px}
+
+/* ═══ INPUTS ═══ */
+input[type=text],input[type=number],select{
+  background:rgba(255,255,255,.04);border:1px solid var(--border2);
+  border-radius:var(--r2);color:var(--text);
+  font-family:var(--mono);font-size:12px;
+  padding:10px 14px;outline:none;transition:border-color .15s;
+}
+input[type=text]:focus,input[type=number]:focus,select:focus{border-color:rgba(0,229,255,.4)}
+input::placeholder{color:var(--dim)}
+select option{background:#1a1e2a}
+
+/* ═══ BADGES ═══ */
+.badge{display:inline-block;padding:3px 10px;border-radius:50px;font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase}
+.badge-cyan{background:rgba(0,229,255,.12);color:var(--cyan);border:1px solid rgba(0,229,255,.25)}
+.badge-green{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+.badge-red{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.badge-gold{background:rgba(245,158,11,.12);color:var(--gold);border:1px solid rgba(245,158,11,.25)}
+.badge-purple{background:rgba(168,85,247,.12);color:var(--purple);border:1px solid rgba(168,85,247,.25)}
+
+/* ═══ MSG ═══ */
+.msg{font-family:var(--mono);font-size:11px;min-height:16px;margin-top:6px;letter-spacing:.5px}
+.msg.err{color:var(--red)}.msg.ok{color:var(--green)}.msg.info{color:var(--cyan)}
+
+/* ═══ DIVIDER ═══ */
+.divider{height:1px;background:var(--border);margin:14px 0}
+
+/* ═══ WINNER BANNER ═══ */
+.winner-banner{
+  background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(168,85,247,.08));
+  border:1px solid rgba(245,158,11,.4);
+  border-radius:var(--r);padding:16px 20px;margin-top:12px;
+  animation:glow 2s infinite;
+}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}50%{box-shadow:0 0 24px rgba(245,158,11,.2)}}
+.winner-banner h3{font-family:var(--display);font-size:22px;letter-spacing:3px;color:var(--gold)}
+.winner-banner p{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.5px}
+
+/* ═══════════════════════════════════════
+   HOME
+═══════════════════════════════════════ */
+.home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.home-game-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:24px 20px;cursor:pointer;
+  transition:all .22s;position:relative;overflow:hidden;
+}
+.home-game-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,229,255,.06),transparent 60%);
+  opacity:0;transition:opacity .22s;
+}
+.home-game-card:hover{border-color:rgba(0,229,255,.3);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.home-game-card:hover::after{opacity:1}
+.hc-icon{font-size:32px;margin-bottom:12px}
+.hc-title{font-family:var(--display);font-size:24px;letter-spacing:3px;color:var(--bright)}
+.hc-desc{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px;line-height:1.7;letter-spacing:.5px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat-card{background:var(--card);border:1px solid var(--border2);border-radius:var(--r);padding:16px 18px}
+.stat-n{font-family:var(--display);font-size:34px;letter-spacing:1px;color:var(--cyan)}
+.stat-l{font-family:var(--mono);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px}
+
+/* ═══════════════════════════════════════
+   BINGO
+═══════════════════════════════════════ */
+.bingo-layout{display:grid;grid-template-columns:1fr 300px;gap:18px}
+.bingo-players{display:flex;flex-direction:column;gap:10px}
+.bingo-player-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:14px 16px;transition:border-color .2s;
+}
+.bingo-player-card.winner-card{border-color:var(--gold);box-shadow:0 0 16px rgba(245,158,11,.15)}
+.bingo-player-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.bingo-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:var(--mono);flex-shrink:0}
+.bingo-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.bingo-cell{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;font-size:13px;font-weight:700;
+  font-family:var(--mono);background:rgba(255,255,255,.04);
+  color:var(--dim);border:1px solid var(--border);transition:all .25s;
+}
+.bingo-cell.hit{background:rgba(0,229,255,.12);color:var(--cyan);border-color:rgba(0,229,255,.4)}
+.bingo-cell.line-win{background:rgba(16,185,129,.15);color:var(--green);border-color:rgba(16,185,129,.4);box-shadow:0 0 8px rgba(16,185,129,.2)}
+
+.b-ball{
+  width:76px;height:76px;border-radius:50%;
+  background:var(--card2);border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:34px;color:var(--cyan);
+  margin:0 auto;transition:all .3s;
+}
+.b-ball.active{border-color:var(--cyan);box-shadow:0 0 28px rgba(0,229,255,.3)}
+.drawn-chips{display:flex;flex-wrap:wrap;gap:5px;max-height:140px;overflow-y:auto;margin-top:8px}
+.drawn-chip{
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:10px;color:var(--dim);transition:all .2s;
+}
+.drawn-chip.recent{border-color:var(--cyan);color:var(--cyan)}
+
+/* ═══════════════════════════════════════
+   BLACKJACK
+═══════════════════════════════════════ */
+.bj-layout{display:grid;grid-template-columns:1fr 260px;gap:18px}
+.bj-table{
+  background:linear-gradient(160deg,rgba(16,185,129,.04),rgba(0,0,0,0));
+  border:1px solid rgba(16,185,129,.2);
+  border-radius:var(--r);padding:28px;text-align:center;
+}
+.bj-zone-label{
+  font-family:var(--mono);font-size:9px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--dim);margin-bottom:14px;
+}
+.bj-cards{display:flex;justify-content:center;gap:10px;min-height:120px;align-items:center;flex-wrap:wrap;padding:10px 0}
+/* PLAYING CARDS — larger */
+.card-playing{
+  width:76px;height:110px;border-radius:10px;
+  background:#fff;border:1px solid #e0e0e0;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:7px;font-family:var(--mono);font-weight:700;
+  font-size:18px;color:#111;flex-shrink:0;
+  box-shadow:0 4px 16px rgba(0,0,0,.5);
+}
+.card-playing.red{color:#c0392b}
+.card-playing.hidden{
+  background:repeating-linear-gradient(135deg,#1a1a2e 0px,#1a1a2e 8px,#16213e 8px,#16213e 16px);
+  border:1px solid rgba(168,85,247,.4);box-shadow:0 4px 16px rgba(168,85,247,.2);
+}
+.card-top{font-size:15px;line-height:1}
+.card-center{font-size:26px;text-align:center}
+.bj-score{
+  font-family:var(--display);font-size:36px;color:var(--cyan);
+  margin:10px 0 4px;letter-spacing:2px;
+}
+.bj-status{font-family:var(--mono);font-size:12px;color:var(--text);min-height:20px;margin:8px 0;letter-spacing:.5px}
+.bj-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+/* ═══════════════════════════════════════
+   MOTUS
+═══════════════════════════════════════ */
+.motus-layout{display:grid;grid-template-columns:1fr 280px;gap:18px}
+.motus-config{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin-bottom:16px;
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:12px 16px;
+}
+.motus-config label{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:1px}
+.motus-grid{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+.motus-row{display:flex;gap:6px}
+.motus-cell{
+  width:52px;height:52px;border-radius:8px;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:26px;color:var(--text);
+  text-transform:uppercase;transition:all .25s;
+  background:var(--card2);
+}
+.motus-cell.correct{background:#c0392b;border-color:#c0392b;color:#fff;box-shadow:0 0 10px rgba(192,57,43,.4)}
+.motus-cell.present{background:rgba(245,158,11,.25);border-color:var(--gold);color:var(--gold)}
+.motus-cell.absent{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.05);color:var(--dim)}
+.motus-cell.filled{border-color:rgba(0,229,255,.3);color:var(--cyan)}
+.motus-cell.fixed{background:#c0392b;border-color:#c0392b;color:#fff}
+
+.motus-keyboard{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.motus-kb-row{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
+.motus-key{
+  padding:9px 13px;border-radius:6px;min-width:36px;text-align:center;
+  background:var(--card2);border:1px solid var(--border2);
+  color:var(--text);font-family:var(--display);font-size:16px;letter-spacing:1px;
+  cursor:pointer;user-select:none;transition:all .15s;
+}
+.motus-key:hover{background:rgba(0,229,255,.08);border-color:rgba(0,229,255,.3)}
+.motus-key.correct{background:#c0392b;border-color:#c0392b;color:#fff}
+.motus-key.present{background:rgba(245,158,11,.2);border-color:var(--gold);color:var(--gold)}
+.motus-key.absent{background:rgba(255,255,255,.02);border-color:transparent;color:var(--dim)}
+
+.motus-current-player{
+  font-family:var(--display);font-size:26px;letter-spacing:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.motus-queue-item{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:8px;padding:9px 12px;font-size:13px;transition:border-color .2s;
+}
+.motus-queue-item.current{border-color:rgba(0,229,255,.4);background:rgba(0,229,255,.05)}
+
+/* ═══════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════ */
+.h-day-title{
+  font-family:var(--display);font-size:22px;letter-spacing:3px;color:var(--cyan);
+  margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);
+}
+.h-table{width:100%;border-collapse:collapse;font-size:12px}
+.h-table th{
+  text-align:left;padding:9px 14px;
+  font-family:var(--mono);font-size:9px;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border);
+}
+.h-table td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.03);font-family:var(--mono);font-size:11px}
+.h-table tr:hover td{background:rgba(255,255,255,.02)}
+.h-table tr:last-child td{border-bottom:none}
+.h-empty{
+  text-align:center;padding:56px;color:var(--dim);
+  font-family:var(--mono);font-size:12px;letter-spacing:1px;
+}
+
+/* ═══ LAYOUT HELPERS ═══ */
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.mt{margin-top:12px}.mt-lg{margin-top:20px}
+.flex-col{display:flex;flex-direction:column;gap:14px}
+
+@media(max-width:900px){
+  .sidebar{width:56px}
+  .sidebar-logo,.nav-label,.sidebar-foot{display:none}
+  .main{margin-left:56px;padding:16px}
+  .bingo-layout,.bj-layout,.motus-layout,.home-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-title">CASINO RP</div>
+    <div class="logo-sub">Los Santos</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" onclick="goPage('home')"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></div>
+    <div class="nav-item" onclick="goPage('bingo')"><span class="nav-icon">🎱</span><span class="nav-label">Bingo</span></div>
+    <div class="nav-item" onclick="goPage('blackjack')"><span class="nav-icon">🃏</span><span class="nav-label">Black Jack</span></div>
+    <div class="nav-item" onclick="goPage('motus')"><span class="nav-icon">🔤</span><span class="nav-label">MOTUS</span></div>
+    <div class="nav-sep"></div>
+    <div class="nav-item" onclick="goPage('history')"><span class="nav-icon">📜</span><span class="nav-label">Historique</span></div>
+  </nav>
+  <div class="sidebar-foot">v2.0 — Casino RP</div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ══════ HOME ══════ -->
+<div class="page active" id="page-home">
+  <div class="page-header">
+    <div class="page-title">CASINO RP</div>
+    <div class="page-desc">Los Santos — Sélectionnez un jeu</div>
+  </div>
+  <div class="home-grid">
+    <div class="home-game-card" onclick="goPage('bingo')">
+      <div class="hc-icon">🎱</div>
+      <div class="hc-title">BINGO</div>
+      <div class="hc-desc">Grille 3×5 — Mise 1 000$ à 25 000$ — Carton plein ×3</div>
+    </div>
+    <div class="home-game-card" onclick="goPage('blackjack')">
+      <div class="hc-icon">🃏</div>
+      <div class="hc-title">BLACK JACK</div>
+      <div class="hc-desc">Battez le croupier — Mise jusqu'à 50 000$ — Blackjack ×1.5</div>
+    </div>
+    <div class="home-game-card" onclick="goPage('motus')">
+      <div class="hc-icon">🔤</div>
+      <div class="hc-title">MOTUS</div>
+      <div class="hc-desc">5 à 8 lettres — 6 essais — Gains selon longueur et rapidité</div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-n" id="s-parties">0</div><div class="stat-l">Parties jouées</div></div>
+    <div class="stat-card"><div class="stat-n" id="s-gains">0$</div><div class="stat-l">Total distribué</div></div>
+    <div class="stat-card"><div class="stat-n" id="s-joueurs">0</div><div class="stat-l">Joueurs uniques</div></div>
+    <div class="stat-card"><div class="stat-n" id="s-today">0</div><div class="stat-l">Aujourd'hui</div></div>
+  </div>
+</div>
+
+<!-- ══════ BINGO ══════ -->
+<div class="page" id="page-bingo">
+  <div class="page-header">
+    <div class="page-title">BINGO</div>
+    <div class="page-desc">Mise 1 000$ — 25 000$ · Grille 3×5 · Numéros 1 à 50</div>
+  </div>
+  <div class="bingo-layout">
+    <div>
+      <div class="card" id="b-add-card">
+        <div class="card-title">Inscrire un joueur</div>
+        <div class="row">
+          <input type="text" id="b-name" placeholder="Pseudo du joueur" style="flex:1;min-width:100px"/>
+          <input type="number" id="b-bet" value="5000" min="1000" max="25000" step="1000" style="width:110px"/>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--dim)">$</span>
+          <button class="btn btn-grad btn-sm" onclick="bingoAddPlayer()">+ Ajouter</button>
+        </div>
+        <div class="msg" id="b-msg"></div>
+      </div>
+      <div class="bingo-players mt" id="b-players"></div>
+      <div id="b-winner"></div>
+    </div>
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">Contrôles</div>
+        <div class="row" style="gap:8px">
+          <button class="btn btn-grad btn-sm" id="b-start-btn" onclick="bingoStart()">▶ Lancer</button>
+          <button class="btn btn-outline btn-sm" onclick="bingoReset()">Réinitialiser</button>
+        </div>
+        <div class="divider"></div>
+        <div class="b-ball" id="b-ball">—</div>
+        <div style="text-align:center;margin-top:10px">
+          <button class="btn btn-grad" id="b-draw-btn" onclick="bingoDraw()" style="display:none;width:100%">Tirer un numéro</button>
+        </div>
+        <div class="msg info" style="text-align:center;margin-top:8px" id="b-draw-msg">En attente...</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Numéros tirés (<span id="b-drawn-count">0</span>/50)</div>
+        <div class="drawn-chips" id="b-drawn-chips"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Gains</div>
+        <div style="font-family:var(--mono);font-size:11px;line-height:2.2;color:var(--dim)">
+          <div>1 ligne → <span style="color:var(--gold)">×0.5</span></div>
+          <div>2 lignes → <span style="color:var(--cyan)">×1.0</span></div>
+          <div>Carton plein → <span style="color:var(--green)">×3.0 🏆</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ BLACKJACK ══════ -->
+<div class="page" id="page-blackjack">
+  <div class="page-header">
+    <div class="page-title">BLACK JACK</div>
+    <div class="page-desc">Battez le croupier sans dépasser 21</div>
+  </div>
+  <div class="bj-layout">
+    <div>
+      <div class="card" id="bj-setup-card">
+        <div class="card-title">Nouveau joueur</div>
+        <div class="row">
+          <input type="text" id="bj-name" placeholder="Pseudo" style="flex:1;min-width:100px"/>
+          <input type="number" id="bj-bet" value="10000" min="1000" max="50000" step="1000" style="width:110px"/>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--dim)">$</span>
+          <button class="btn btn-grad btn-sm" onclick="bjStart()">Jouer</button>
+        </div>
+        <div class="msg" id="bj-msg"></div>
+      </div>
+      <div class="bj-table mt">
+        <div class="bj-zone-label">— CROUPIER —</div>
+        <div class="bj-cards" id="bj-dealer-cards"></div>
+        <div class="bj-score" id="bj-dealer-score">—</div>
+        <div class="divider"></div>
+        <div class="bj-zone-label">— JOUEUR · <span id="bj-player-label" style="color:var(--cyan)">...</span> —</div>
+        <div class="bj-cards" id="bj-player-cards"></div>
+        <div class="bj-score" id="bj-player-score">—</div>
+        <div class="bj-status" id="bj-status"></div>
+        <div class="bj-actions">
+          <button class="btn btn-green" id="bj-hit-btn" onclick="bjHit()">Tirer (Hit)</button>
+          <button class="btn btn-red" id="bj-stand-btn" onclick="bjStand()">Rester (Stand)</button>
+        </div>
+      </div>
+    </div>
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">Session en cours</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim)">Joueur</div>
+        <div style="font-family:var(--display);font-size:22px;letter-spacing:2px;color:var(--bright);margin:2px 0 12px" id="bj-sn">—</div>
+        <div class="row" style="gap:20px">
+          <div><div style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase">Mise</div><div style="font-family:var(--display);font-size:26px;letter-spacing:1px;color:var(--gold)" id="bj-sbet">—</div></div>
+          <div><div style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase">Résultat</div><div style="font-family:var(--display);font-size:26px;letter-spacing:1px" id="bj-sres">—</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Gains</div>
+        <div style="font-family:var(--mono);font-size:11px;line-height:2.2;color:var(--dim)">
+          <div>Victoire → <span style="color:var(--green)">×1</span></div>
+          <div>Blackjack → <span style="color:var(--green)">×1.5</span></div>
+          <div>Égalité → <span style="color:var(--gold)">Remboursé</span></div>
+          <div>Défaite → <span style="color:var(--red)">−mise</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MOTUS ══════ -->
+<div class="page" id="page-motus">
+  <div class="page-header">
+    <div class="page-title">MOTUS</div>
+    <div class="page-desc">Trouvez le mot en 6 essais · La 1ère lettre est donnée</div>
+  </div>
+  <div class="motus-layout">
+    <div>
+      <!-- Config mot -->
+      <div class="motus-config">
+        <label>LONGUEUR DU MOT</label>
+        <select id="m-len" onchange="motusChangeLen()" style="width:auto;padding:7px 12px">
+          <option value="5">5 lettres</option>
+          <option value="6" selected>6 lettres</option>
+          <option value="7">7 lettres</option>
+          <option value="8">8 lettres</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="motusNewWord()" id="m-newword-btn">Nouveau mot</button>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn btn-outline btn-xs" onclick="motusReveal()">Révéler</button>
+          <button class="btn btn-outline btn-xs" onclick="motusReset()">Réinitialiser</button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div style="margin-bottom:6px">
+            <div class="motus-current-player" id="m-current-player">—</div>
+            <div class="msg info" id="m-gain-info" style="margin-top:4px">Inscrivez des joueurs pour commencer</div>
+          </div>
+          <div class="motus-grid" id="m-grid"></div>
+          <div class="msg" id="m-msg"></div>
+          <div class="motus-keyboard" id="m-keyboard"></div>
+        </div>
+      </div>
+      <div id="m-result-area"></div>
+    </div>
+
+    <div class="flex-col">
+      <div class="card">
+        <div class="card-title">File d'attente</div>
+        <div class="row" style="gap:6px">
+          <input type="text" id="m-name" placeholder="Pseudo" style="flex:1;min-width:70px;font-size:11px;padding:8px 10px"/>
+          <input type="number" id="m-bet" value="5000" min="1000" max="25000" step="1000" style="width:85px;font-size:11px;padding:8px 10px"/>
+          <button class="btn btn-grad btn-xs" onclick="motusAddPlayer()">+</button>
+        </div>
+        <div class="msg" id="m-add-msg"></div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;max-height:240px;overflow-y:auto" id="m-queue"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Gains selon longueur</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim);line-height:2;letter-spacing:.3px">
+          <div style="color:var(--text);margin-bottom:4px">5 lettres :</div>
+          <div>Essai 1 → <span style="color:var(--gold)">×2</span> · 2 → <span style="color:var(--gold)">×1.5</span> · 3-6 → <span style="color:var(--gold)">×1</span></div>
+          <div style="color:var(--text);margin:6px 0 4px">6 lettres :</div>
+          <div>Essai 1 → <span style="color:var(--cyan)">×3</span> · 2 → <span style="color:var(--cyan)">×2</span> · 3-4 → <span style="color:var(--cyan)">×1</span> · 5-6 → <span style="color:var(--cyan)">×0.5</span></div>
+          <div style="color:var(--text);margin:6px 0 4px">7 lettres :</div>
+          <div>Essai 1 → <span style="color:var(--purple)">×4</span> · 2 → <span style="color:var(--purple)">×3</span> · 3-4 → <span style="color:var(--purple)">×2</span> · 5-6 → <span style="color:var(--purple)">×1</span></div>
+          <div style="color:var(--text);margin:6px 0 4px">8 lettres :</div>
+          <div>Essai 1 → <span style="color:var(--pink)">×5</span> · 2 → <span style="color:var(--pink)">×4</span> · 3-4 → <span style="color:var(--pink)">×3</span> · 5-6 → <span style="color:var(--pink)">×2</span></div>
+          <div style="margin-top:8px">Non trouvé → <span style="color:var(--red)">Perdu</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ HISTORY ══════ -->
+<div class="page" id="page-history">
+  <div class="page-header">
+    <div class="page-title">HISTORIQUE</div>
+    <div class="page-desc">Résultats par jour et par jeu</div>
+  </div>
+  <div class="row" style="margin-bottom:18px;gap:8px">
+    <select id="h-filter" onchange="renderHistory()" style="width:auto">
+      <option value="all">Tous les jeux</option>
+      <option value="Bingo">Bingo</option>
+      <option value="Black Jack">Black Jack</option>
+      <option value="MOTUS">MOTUS</option>
+    </select>
+    <button class="btn btn-red btn-sm" onclick="clearHistory()">Effacer l'historique</button>
+  </div>
+  <div id="h-content"></div>
+</div>
+
+</main>
+
+<script>
+/* ═══════════════════════════════════════
+   GLOBAL
+═══════════════════════════════════════ */
+let history = JSON.parse(localStorage.getItem('crpHistory')||'[]');
+function saveHistory(){localStorage.setItem('crpHistory',JSON.stringify(history))}
+function fmt(n){return Math.abs(n).toLocaleString('fr-FR')}
+
+function addHistoryEntry(game,player,bet,result,gain){
+  const now=new Date();
+  const dateKey=now.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  const time=now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  history.unshift({game,player,bet,result,gain,dateKey,time});
+  saveHistory(); updateHomeStats();
+}
+
+function goPage(p){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const map={home:0,bingo:1,blackjack:2,motus:3,history:4};
+  document.querySelectorAll('.nav-item')[map[p]]?.classList.add('active');
+  if(p==='history')renderHistory();
+  if(p==='home')updateHomeStats();
+}
+
+function updateHomeStats(){
+  const players=new Set(history.map(h=>h.player));
+  const today=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  const totalGain=history.reduce((s,h)=>s+(h.gain>0?h.gain:0),0);
+  document.getElementById('s-parties').textContent=history.length;
+  document.getElementById('s-gains').textContent=fmt(totalGain)+'$';
+  document.getElementById('s-joueurs').textContent=players.size;
+  document.getElementById('s-today').textContent=history.filter(h=>h.dateKey===today).length;
+}
+
+function setMsg(id,text,type){
+  const el=document.getElementById(id); if(!el)return;
+  el.textContent=text; el.className='msg'+(type?' '+type:'');
+}
+
+/* ═══════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════ */
+function renderHistory(){
+  const gf=document.getElementById('h-filter').value;
+  const filtered=history.filter(h=>gf==='all'||h.game===gf);
+  const content=document.getElementById('h-content');
+  if(!filtered.length){content.innerHTML='<div class="h-empty">Aucun résultat.</div>';return;}
+  const byDay={};
+  filtered.forEach(h=>{if(!byDay[h.dateKey])byDay[h.dateKey]=[];byDay[h.dateKey].push(h);});
+  let html='';
+  Object.keys(byDay).forEach(day=>{
+    html+=`<div style="margin-bottom:24px">
+    <div class="h-day-title">${day.toUpperCase()}</div>
+    <div class="card" style="padding:0;overflow:hidden">
+    <table class="h-table"><thead><tr>
+      <th>Heure</th><th>Jeu</th><th>Joueur</th><th>Mise</th><th>Résultat</th><th>Gain/Perte</th>
+    </tr></thead><tbody>`;
+    byDay[day].forEach(h=>{
+      const gc=h.gain>0?'var(--green)':h.gain<0?'var(--red)':'var(--dim)';
+      const gs=h.gain>0?'+'+fmt(h.gain)+'$':h.gain<0?'-'+fmt(-h.gain)+'$':'0$';
+      const gb={Bingo:'badge-gold','Black Jack':'badge-cyan',MOTUS:'badge-purple'}[h.game]||'badge-cyan';
+      html+=`<tr>
+        <td style="color:var(--dim)">${h.time}</td>
+        <td><span class="badge ${gb}">${h.game}</span></td>
+        <td style="color:var(--bright);font-weight:600">${h.player}</td>
+        <td>${fmt(h.bet)}$</td>
+        <td style="color:var(--dim)">${h.result}</td>
+        <td style="font-family:var(--display);font-size:17px;letter-spacing:1px;color:${gc}">${gs}</td>
+      </tr>`;
+    });
+    html+='</tbody></table></div></div>';
+  });
+  content.innerHTML=html;
+}
+
+function clearHistory(){
+  if(confirm('Effacer tout l\'historique ?')){history=[];saveHistory();renderHistory();updateHomeStats();}
+}
+
+/* ═══════════════════════════════════════
+   BINGO
+═══════════════════════════════════════ */
+let bPlayers=[],bDrawn=[],bPool=[],bPhase='setup';
+const BCOLS=['#00e5ff','#a855f7','#ec4899','#f59e0b','#10b981','#ef4444','#f97316','#6366f1'];
+
+function genBGrid(){const n=[];while(n.length<15){const v=Math.floor(Math.random()*50)+1;if(!n.includes(v))n.push(v);}return n;}
+function initBPool(){bPool=[];for(let i=1;i<=50;i++)bPool.push(i);bPool.sort(()=>Math.random()-.5);}
+function bCheckLines(grid,drawn){let l=0;for(let r=0;r<3;r++){if(grid.slice(r*5,r*5+5).every(n=>drawn.includes(n)))l++;}return l;}
+
+function bingoAddPlayer(){
+  if(bPhase!=='setup'){setMsg('b-msg','Le jeu est déjà lancé.','err');return;}
+  const name=document.getElementById('b-name').value.trim();
+  const bet=parseInt(document.getElementById('b-bet').value);
+  if(!name){setMsg('b-msg','Entrez un pseudo.','err');return;}
+  if(bet<1000||bet>25000){setMsg('b-msg','Mise entre 1 000 $ et 25 000 $.','err');return;}
+  if(bPlayers.find(p=>p.name.toLowerCase()===name.toLowerCase())){setMsg('b-msg','Joueur déjà inscrit.','err');return;}
+  bPlayers.push({name,bet,grid:genBGrid()});
+  document.getElementById('b-name').value='';
+  setMsg('b-msg',name+' inscrit — Mise : '+fmt(bet)+'$','ok');
+  renderBingo();
+}
+
+function renderBingo(){
+  const list=document.getElementById('b-players'); list.innerHTML='';
+  bPlayers.forEach((p,i)=>{
+    const col=BCOLS[i%BCOLS.length];
+    const init=p.name.slice(0,2).toUpperCase();
+    const lines=bCheckLines(p.grid,bDrawn);
+    let gainBadge='';
+    if(bPhase!=='setup'){
+      if(lines===1)gainBadge=`<span class="badge badge-gold">1 ligne +${fmt(Math.floor(p.bet*.5))}$</span>`;
+      else if(lines===2)gainBadge=`<span class="badge badge-cyan">2 lignes +${fmt(p.bet)}$</span>`;
+      else if(lines===3)gainBadge=`<span class="badge badge-green">Carton plein +${fmt(p.bet*3)}$</span>`;
+    }
+    const cells=p.grid.map((n,ci)=>{
+      const row=Math.floor(ci/5);
+      const rowOk=p.grid.slice(row*5,row*5+5).every(x=>bDrawn.includes(x));
+      return `<div class="bingo-cell${rowOk?' line-win':bDrawn.includes(n)?' hit':''}">${n}</div>`;
+    }).join('');
+    const rmBtn=bPhase==='setup'?`<button class="btn btn-outline btn-xs" style="margin-left:auto" onclick="bRemove(${i})">✕</button>`:'';
+    const card=document.createElement('div');
+    card.className='bingo-player-card'+(lines===3?' winner-card':'');
+    card.innerHTML=`<div class="bingo-player-header">
+      <div class="bingo-avatar" style="background:${col}22;color:${col}">${init}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;color:var(--bright);font-size:14px">${p.name} ${gainBadge}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:2px">Mise : ${fmt(p.bet)} $</div>
+      </div>${rmBtn}
+    </div><div class="bingo-grid">${cells}</div>`;
+    list.appendChild(card);
+  });
+}
+
+function bRemove(i){bPlayers.splice(i,1);renderBingo();}
+
+function bingoStart(){
+  if(!bPlayers.length){setMsg('b-msg','Ajoutez au moins 1 joueur.','err');return;}
+  bPhase='playing'; initBPool(); bDrawn=[];
+  document.getElementById('b-start-btn').style.display='none';
+  document.getElementById('b-draw-btn').style.display='';
+  document.getElementById('b-add-card').style.opacity='.4';
+  document.getElementById('b-add-card').style.pointerEvents='none';
+  setMsg('b-draw-msg','Cliquez pour tirer !','info');
+  renderBingo();
+}
+
+function bingoDraw(){
+  if(bPhase!=='playing'||!bPool.length)return;
+  const num=bPool.pop(); bDrawn.push(num);
+  const ball=document.getElementById('b-ball');
+  ball.textContent=num; ball.className='b-ball active';
+  setTimeout(()=>ball.classList.remove('active'),800);
+  const chips=document.getElementById('b-drawn-chips');
+  chips.querySelectorAll('.drawn-chip.recent').forEach(c=>c.classList.remove('recent'));
+  const chip=document.createElement('div');
+  chip.className='drawn-chip recent'; chip.textContent=num;
+  chips.prepend(chip);
+  document.getElementById('b-drawn-count').textContent=bDrawn.length;
+  let winner=null;
+  bPlayers.forEach(p=>{if(bCheckLines(p.grid,bDrawn)===3&&!winner)winner=p;});
+  renderBingo();
+  if(winner){
+    bPhase='done';
+    document.getElementById('b-draw-btn').disabled=true;
+    const gain=winner.bet*3;
+    document.getElementById('b-winner').innerHTML=`<div class="winner-banner"><h3>🏆 CARTON PLEIN — ${winner.name.toUpperCase()}</h3><p>Mise : ${fmt(winner.bet)}$ → Gain : +${fmt(gain)}$</p></div>`;
+    setMsg('b-draw-msg','Partie terminée !','ok');
+    addHistoryEntry('Bingo',winner.name,winner.bet,'Carton plein',gain);
+    bPlayers.filter(p=>p!==winner).forEach(p=>{
+      const l=bCheckLines(p.grid,bDrawn);
+      const g=l===1?Math.floor(p.bet*.5):l===2?p.bet:0;
+      addHistoryEntry('Bingo',p.name,p.bet,l?l+' ligne(s)':'Aucun gain',g);
+    });
+  } else if(!bPool.length){
+    bPhase='done';
+    document.getElementById('b-draw-btn').disabled=true;
+    setMsg('b-draw-msg','Plus de numéros — Fin.','info');
+    bPlayers.forEach(p=>{
+      const l=bCheckLines(p.grid,bDrawn);
+      const g=l===1?Math.floor(p.bet*.5):l===2?p.bet:l===3?p.bet*3:0;
+      addHistoryEntry('Bingo',p.name,p.bet,l?l+' ligne(s)':'Aucun gain',g);
+    });
+  } else {
+    setMsg('b-draw-msg',bDrawn.length+' tiré(s) — '+bPool.length+' restant(s)','info');
+  }
+}
+
+function bingoReset(){
+  bPlayers=[]; bDrawn=[]; bPool=[]; bPhase='setup';
+  ['b-players','b-winner','b-drawn-chips'].forEach(id=>document.getElementById(id).innerHTML='');
+  document.getElementById('b-ball').textContent='—';
+  document.getElementById('b-ball').className='b-ball';
+  document.getElementById('b-drawn-count').textContent='0';
+  document.getElementById('b-start-btn').style.display='';
+  document.getElementById('b-draw-btn').style.display='none';
+  document.getElementById('b-draw-btn').disabled=false;
+  document.getElementById('b-add-card').style.opacity='1';
+  document.getElementById('b-add-card').style.pointerEvents='';
+  setMsg('b-msg',''); setMsg('b-draw-msg','En attente...');
+}
+
+/* ═══════════════════════════════════════
+   BLACKJACK
+═══════════════════════════════════════ */
+const SUITS=['♠','♥','♦','♣'],VALS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+let bjDeck=[],bjDealer=[],bjPlayer=[],bjBet=0,bjName='',bjPhase='idle';
+
+function makeDeck(){const d=[];SUITS.forEach(s=>VALS.forEach(v=>d.push({s,v})));return d.sort(()=>Math.random()-.5);}
+function bjDraw(){return bjDeck.pop();}
+function cVal(c){if(c.v==='A')return 11;if(['K','Q','J'].includes(c.v))return 10;return parseInt(c.v);}
+function handVal(h){let s=h.reduce((a,c)=>a+cVal(c),0),a=h.filter(c=>c.v==='A').length;while(s>21&&a>0){s-=10;a--;}return s;}
+function cardHtml(c,hidden){
+  if(hidden)return`<div class="card-playing hidden"></div>`;
+  const red=c.s==='♥'||c.s==='♦';
+  return`<div class="card-playing${red?' red':''}"><div class="card-top">${c.v}${c.s}</div><div class="card-center">${c.s}</div></div>`;
+}
+function renderBjCards(showDealer){
+  document.getElementById('bj-player-cards').innerHTML=bjPlayer.map(c=>cardHtml(c,false)).join('');
+  document.getElementById('bj-dealer-cards').innerHTML=bjDealer.map((c,i)=>cardHtml(c,!showDealer&&i===1)).join('');
+  document.getElementById('bj-player-score').textContent=handVal(bjPlayer);
+  document.getElementById('bj-dealer-score').textContent=showDealer?handVal(bjDealer):'?';
+}
+function setBjActions(on){
+  ['bj-hit-btn','bj-stand-btn'].forEach(id=>document.getElementById(id).disabled=!on);
+}
+
+function bjStart(){
+  const name=document.getElementById('bj-name').value.trim();
+  const bet=parseInt(document.getElementById('bj-bet').value);
+  if(!name){setMsg('bj-msg','Entrez un pseudo.','err');return;}
+  if(bet<1000||bet>50000){setMsg('bj-msg','Mise entre 1 000 $ et 50 000 $.','err');return;}
+  bjName=name; bjBet=bet; bjPhase='playing';
+  bjDeck=makeDeck(); bjDealer=[bjDraw(),bjDraw()]; bjPlayer=[bjDraw(),bjDraw()];
+  document.getElementById('bj-sn').textContent=name;
+  document.getElementById('bj-sbet').textContent=fmt(bet)+'$';
+  document.getElementById('bj-sres').textContent='—';
+  document.getElementById('bj-sres').style.color='var(--dim)';
+  document.getElementById('bj-player-label').textContent=name;
+  document.getElementById('bj-setup-card').style.opacity='.4';
+  document.getElementById('bj-setup-card').style.pointerEvents='none';
+  setBjActions(true); renderBjCards(false);
+  setMsg('bj-status','');
+  if(handVal(bjPlayer)===21)bjStand();
+}
+
+function bjHit(){
+  if(bjPhase!=='playing')return;
+  bjPlayer.push(bjDraw());
+  renderBjCards(false);
+  if(handVal(bjPlayer)>21)bjEnd('bust');
+  else if(handVal(bjPlayer)===21)bjStand();
+}
+
+function bjStand(){
+  if(bjPhase!=='playing')return;
+  while(handVal(bjDealer)<17)bjDealer.push(bjDraw());
+  renderBjCards(true);
+  const ps=handVal(bjPlayer),ds=handVal(bjDealer);
+  if(ps>21)bjEnd('bust');
+  else if(ds>21)bjEnd('win');
+  else if(ps>ds)bjEnd('win');
+  else if(ps===ds)bjEnd('push');
+  else bjEnd('lose');
+}
+
+function bjEnd(outcome){
+  bjPhase='idle'; setBjActions(false); renderBjCards(true);
+  let msg='',gain=0,result='';
+  const isBlackjack=bjPlayer.length===2&&handVal(bjPlayer)===21;
+  if(outcome==='bust'){msg='💥 Bust — Dépassé 21 !';gain=-bjBet;result='Bust';}
+  else if(outcome==='win'&&isBlackjack){msg='🃏 Blackjack ! ×1.5';gain=Math.floor(bjBet*1.5);result='Blackjack';}
+  else if(outcome==='win'){msg='✅ Victoire !';gain=bjBet;result='Victoire';}
+  else if(outcome==='push'){msg='🤝 Égalité — Remboursé.';gain=0;result='Égalité';}
+  else{msg='❌ Défaite.';gain=-bjBet;result='Défaite';}
+  setMsg('bj-status',msg);
+  const res=document.getElementById('bj-sres');
+  res.textContent=(gain>0?'+':'')+fmt(gain)+'$';
+  res.style.color=gain>0?'var(--green)':gain<0?'var(--red)':'var(--dim)';
+  addHistoryEntry('Black Jack',bjName,bjBet,result,gain);
+  setTimeout(()=>{
+    document.getElementById('bj-setup-card').style.opacity='1';
+    document.getElementById('bj-setup-card').style.pointerEvents='';
+    document.getElementById('bj-player-cards').innerHTML='';
+    document.getElementById('bj-dealer-cards').innerHTML='';
+    document.getElementById('bj-player-score').textContent='—';
+    document.getElementById('bj-dealer-score').textContent='—';
+    setMsg('bj-status','');
+  },3500);
+}
+
+/* ═══════════════════════════════════════
+   MOTUS — words by length
+═══════════════════════════════════════ */
+const MOTUS_WORDS={
+  5:['ARBRE','BALLE','CARTE','DANSE','ECLAT','FABLE','GRACE','HIVER','IDEAL','JOKER','KARMA','LIBRE','MAGIE','NAGER','ORAGE','PLUME','QUART','REGAL','SABLE','TIRER','VALSE','VAGUE','BLANC','BRUIT','CHAMP','DOUZE','FROID','GUIDE','HAVRE','IMAGE','JOUET','LAPIN','MELON','NOBLE','OLIVE','PISTE','ROUGE','SPORT','TACHE','ULTRA','VERRE','MONDE','NUIT ','CRIME','DROIT','FORCE','GENRE','HONTE','JUSTE','MASSE','ORDRE','PAIX ','POINT','RIVAL','SIGNE','TEMPS','USAGE'],
+  6:['JARDIN','CHEMIN','AMUSER','BANDER','CADEAU','DANCER','ECRIRE','FEUTRE','GRAPPE','HUMOUR','INSTIT','JOUEUR','KLAXON','LUMIER','MARBRE','NOMMER','OPAQUE','PLAIRE','QUARTZ','RENARD','SAUVER','TRESOR','UNIQUE','VIANDE','WIZARD','ZAPPER','BLEUIT','CLOUER','DANGER','ESCALE','FILMER','GLOIRE','HERBES','IGNITE','JUDOKA','KIOSQUE','LAQUER'],
+  7:['AVANCER','BOISSON','COULEUR','DESSERT','ESCALIER','FENETRE','GAGEURE','HAMSTER','IMAGEER','JOURNAL','KETCHUP','LUMIERE','MACHINE','NECTARE','ORANGES','PLANETE','QUALITE','REALITE','SERVICE','TABLEAU','UNIVERS','VACANCE','WESTERN','XEROPHI','YAOURTS','ZEPHYRS','BALCONY','CIRCUIT','DESSINE','EVALUER','FRACTAL','GLACIER'],
+  8:['ABRICOTS','BOULETTE','CHOCOLAT','DIVIDEND','ESCALADE','FANTOMES','GALAXIES','HUMIDITE','INNOCENT','JONCTION','KILOMETRE','LANTERNE','MACHINES','NATURELS','OBSTACLE','PLANCHER','QUARTIER','RECREATE','SURFACES','TOGETHER','URBANISE','VIOLENCE','WIRELESS','XYLOPHON','YOURSELF','ZIRCONIO','BALANCAR','CALCULUS','DROPOUTS','EVALUATE']
+};
+
+let mWord='',mLen=6,mAttempts=[],mCurrentAttempt='',mPhase='setup';
+let mPlayers=[],mCurrentPlayerIdx=0,mFixedLetters=[];
+
+const KB=[['A','Z','E','R','T','Y','U','I','O','P'],['Q','S','D','F','G','H','J','K','L','M'],['W','X','C','V','B','N','⌫','↵']];
+
+function motusGainMult(len,tries){
+  if(len===5){return tries===1?2:tries===2?1.5:1;}
+  if(len===6){return tries===1?3:tries===2?2:tries<=4?1:.5;}
+  if(len===7){return tries===1?4:tries===2?3:tries<=4?2:1;}
+  if(len===8){return tries===1?5:tries===2?4:tries<=4?3:2;}
+  return 1;
+}
+
+function motusPickWord(len){
+  const words=(MOTUS_WORDS[len]||[]).map(w=>w.trim().toUpperCase()).filter(w=>w.length===len);
+  return words[Math.floor(Math.random()*words.length)]||'CASINO';
+}
+
+function motusChangeLen(){
+  mLen=parseInt(document.getElementById('m-len').value);
+  if(mPhase!=='setup'){
+    // Only change len if between players
+  }
+}
+
+function motusNewWord(){
+  mLen=parseInt(document.getElementById('m-len').value);
+  mWord=motusPickWord(mLen);
+  mAttempts=[]; mFixedLetters=[];
+  mCurrentAttempt=mWord[0];
+  document.getElementById('m-result-area').innerHTML='';
+  setMsg('m-msg','');
+  if(mPhase==='setup'&&mPlayers.length>0){mPhase='playing';}
+  else if(mPhase==='setup'){mPhase='demo';}
+  renderMotusGrid(); renderMotusKeyboard();
+}
+
+function motusInit(){
+  mLen=parseInt(document.getElementById('m-len').value);
+  mWord=motusPickWord(mLen);
+  mAttempts=[]; mFixedLetters=[];
+  mCurrentAttempt=mWord[0];
+  if(mPhase!=='playing')mPhase='playing';
+  document.getElementById('m-result-area').innerHTML='';
+  setMsg('m-msg','');
+  renderMotusGrid(); renderMotusKeyboard();
+}
+
+function motusAddPlayer(){
+  const name=document.getElementById('m-name').value.trim();
+  const bet=parseInt(document.getElementById('m-bet').value);
+  if(!name){setMsg('m-add-msg','Entrez un pseudo.','err');return;}
+  if(bet<1000||bet>25000){setMsg('m-add-msg','Mise 1 000$ — 25 000$.','err');return;}
+  if(mPlayers.find(p=>p.name.toLowerCase()===name.toLowerCase())){setMsg('m-add-msg','Déjà inscrit.','err');return;}
+  mPlayers.push({name,bet,done:false,won:false,gain:0});
+  document.getElementById('m-name').value='';
+  setMsg('m-add-msg',name+' inscrit.','ok');
+  renderMotusQueue();
+  if(mPhase==='setup'||mPhase==='demo'){mPhase='playing';if(!mWord)motusInit();motusUpdateCurrent();}
+}
+
+function renderMotusQueue(){
+  const q=document.getElementById('m-queue'); q.innerHTML='';
+  mPlayers.forEach((p,i)=>{
+    const cur=i===mCurrentPlayerIdx&&mPhase==='playing';
+    const d=document.createElement('div');
+    d.className='motus-queue-item'+(cur?' current':'');
+    d.innerHTML=`<div>
+      <span style="font-weight:700;color:${cur?'var(--cyan)':'var(--bright)'};font-size:13px">${p.name}</span>
+      ${cur?'<span class="badge badge-cyan" style="margin-left:6px">En jeu</span>':p.done?(p.won?`<span class="badge badge-green" style="margin-left:6px">+${fmt(p.gain)}$</span>`:'<span class="badge badge-red" style="margin-left:6px">Perdu</span>'):'<span class="badge" style="margin-left:6px;background:rgba(255,255,255,.04);color:var(--dim)">Attente</span>'}
+    </div>
+    <span style="font-family:var(--mono);font-size:10px;color:var(--dim)">${fmt(p.bet)}$</span>`;
+    q.appendChild(d);
+  });
+}
+
+function motusUpdateCurrent(){
+  const p=mPlayers[mCurrentPlayerIdx];
+  document.getElementById('m-current-player').textContent=p?p.name.toUpperCase():'—';
+  document.getElementById('m-gain-info').textContent=p?`Mise : ${fmt(p.bet)}$ — Essai ${mAttempts.length+1}/6 — Mot de ${mLen} lettres`:'';
+}
+
+function renderMotusGrid(){
+  const grid=document.getElementById('m-grid'); grid.innerHTML='';
+  for(let r=0;r<6;r++){
+    const row=document.createElement('div'); row.className='motus-row';
+    for(let c=0;c<mLen;c++){
+      const cell=document.createElement('div'); cell.className='motus-cell';
+      if(r<mAttempts.length){
+        const a=mAttempts[r];
+        cell.textContent=a.word[c]||'';
+        cell.classList.add(a.result[c]||'absent');
+      } else if(r===mAttempts.length){
+        const letter=mCurrentAttempt[c]||'';
+        cell.textContent=letter;
+        if(c===0)cell.classList.add('fixed');
+        else if(letter)cell.classList.add('filled');
+        // If this position is fixed from previous attempt, show it
+        if(mFixedLetters[c]&&!letter){cell.textContent=mFixedLetters[c];cell.classList.add('fixed');}
+      }
+      // Show fixed letters from previous correct positions on current row
+      if(r===mAttempts.length&&mFixedLetters[c]&&!mCurrentAttempt[c]){
+        cell.textContent=mFixedLetters[c]; cell.classList.add('fixed');
+      }
+      row.appendChild(cell);
+    }
+    grid.appendChild(row);
+  }
+}
+
+function renderMotusKeyboard(){
+  const kb=document.getElementById('m-keyboard'); kb.innerHTML='';
+  const used={};
+  mAttempts.forEach(a=>{
+    a.word.split('').forEach((l,i)=>{
+      const r=a.result[i];
+      if(!used[l]||r==='correct'||(r==='present'&&used[l]!=='correct'))used[l]=r;
+    });
+  });
+  KB.forEach(row=>{
+    const div=document.createElement('div'); div.className='motus-kb-row';
+    row.forEach(k=>{
+      const btn=document.createElement('div'); btn.className='motus-key';
+      btn.textContent=k;
+      if(used[k])btn.classList.add(used[k]);
+      btn.onclick=()=>motusKey(k);
+      div.appendChild(btn);
+    });
+    kb.appendChild(div);
+  });
+}
+
+function motusEval(guess,target){
+  const res=Array(mLen).fill('absent');
+  const ta=target.split(''), ga=guess.split(''), used=Array(mLen).fill(false);
+  ga.forEach((l,i)=>{if(l===ta[i]){res[i]='correct';used[i]=true;}});
+  ga.forEach((l,i)=>{
+    if(res[i]==='correct')return;
+    const j=ta.findIndex((t,ti)=>t===l&&!used[ti]);
+    if(j!==-1){res[i]='present';used[j]=true;}
+  });
+  return res;
+}
+
+function motusKey(k){
+  if(mPhase!=='playing')return;
+  if(k==='⌫'){
+    // Don't delete fixed letters
+    let pos=mCurrentAttempt.length-1;
+    // Find rightmost non-fixed position
+    while(pos>0&&mFixedLetters[pos]){pos--;}
+    if(pos===0)return; // Don't delete first letter
+    if(mCurrentAttempt.length>1)mCurrentAttempt=mCurrentAttempt.slice(0,pos);
+    // Rebuild with fixed letters
+    rebuildCurrentAttempt(mCurrentAttempt.length);
+  } else if(k==='↵'){
+    motusSubmit();
+  } else {
+    if(mCurrentAttempt.length<mLen)mCurrentAttempt+=k;
+    // Skip over fixed letters
+    rebuildCurrentAttempt(mCurrentAttempt.length);
+  }
+  renderMotusGrid();
+}
+
+function rebuildCurrentAttempt(len){
+  // Inject fixed letters into current attempt at correct positions
+  let result=mWord[0]; // first letter always fixed
+  for(let i=1;i<len&&i<mLen;i++){
+    if(mFixedLetters[i])result+=mFixedLetters[i];
+    else result+=mCurrentAttempt[i]||'';
+  }
+  mCurrentAttempt=result;
+}
+
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('page-motus').classList.contains('active'))return;
+  const active=document.activeElement;
+  if(active&&(active.tagName==='INPUT'||active.tagName==='SELECT'))return;
+  const k=e.key.toUpperCase();
+  if(e.key==='Backspace'){e.preventDefault();motusKey('⌫');}
+  else if(e.key==='Enter'){motusKey('↵');}
+  else if(k.length===1&&k>='A'&&k<='Z'){motusKey(k);}
+});
+
+function motusSubmit(){
+  if(mCurrentAttempt.length!==mLen){setMsg('m-msg','Le mot doit faire '+mLen+' lettres.','err');return;}
+  // Check fixed letters match
+  for(let i=0;i<mLen;i++){
+    if(mFixedLetters[i]&&mCurrentAttempt[i]!==mFixedLetters[i]){
+      setMsg('m-msg','La lettre en position '+(i+1)+' est fixe : '+mFixedLetters[i],'err');
+      return;
+    }
+  }
+  const result=motusEval(mCurrentAttempt,mWord);
+  mAttempts.push({word:mCurrentAttempt,result});
+  // Update fixed letters (correct positions stay on next line)
+  result.forEach((r,i)=>{if(r==='correct')mFixedLetters[i]=mCurrentAttempt[i];});
+  const won=result.every(r=>r==='correct');
+  renderMotusGrid(); renderMotusKeyboard();
+
+  const p=mPlayers[mCurrentPlayerIdx];
+  if(won){
+    const tries=mAttempts.length;
+    const mult=motusGainMult(mLen,tries);
+    const gain=Math.floor(p.bet*mult);
+    p.done=true; p.won=true; p.gain=gain;
+    setMsg('m-msg','🎉 Bravo ! "'+mWord+'" trouvé en '+tries+' essai(s) !','ok');
+    document.getElementById('m-result-area').innerHTML=`<div class="winner-banner"><h3>🏆 ${p.name.toUpperCase()} — "${mWord}"</h3><p>+${fmt(gain)}$ (×${mult} en ${tries} essai(s) — ${mLen} lettres)</p></div>`;
+    addHistoryEntry('MOTUS',p.name,p.bet,'Trouvé en '+tries+' essai(s)',gain);
+    mPhase='between';
+    renderMotusQueue();
+    setTimeout(motusNextPlayer,2800);
+  } else if(mAttempts.length>=6){
+    p.done=true; p.won=false; p.gain=0;
+    setMsg('m-msg','❌ '+p.name+' n\'a pas trouvé. Le mot était : "'+mWord+'"','err');
+    addHistoryEntry('MOTUS',p.name,p.bet,'Non trouvé ('+mLen+' lettres)',0);
+    mPhase='between';
+    renderMotusQueue();
+    setTimeout(motusNextPlayer,2800);
+  } else {
+    // Prepare next attempt with fixed letters
+    mCurrentAttempt=mFixedLetters[0]||mWord[0];
+    for(let i=1;i<mLen;i++){mCurrentAttempt+=mFixedLetters[i]||'';}
+    motusUpdateCurrent();
+    document.getElementById('m-gain-info').textContent=`Mise : ${fmt(p.bet)}$ — Essai ${mAttempts.length+1}/6 — Mot de ${mLen} lettres`;
+  }
+}
+
+function motusNextPlayer(){
+  mCurrentPlayerIdx++;
+  if(mCurrentPlayerIdx>=mPlayers.length){
+    setMsg('m-msg','Tous les joueurs ont joué. Nouvelle partie possible !','info');
+    document.getElementById('m-result-area').innerHTML='';
+    mPlayers=[]; mCurrentPlayerIdx=0; mPhase='setup';
+    mWord=''; mAttempts=[]; mCurrentAttempt=''; mFixedLetters=[];
+    renderMotusQueue();
+    document.getElementById('m-current-player').textContent='—';
+    document.getElementById('m-gain-info').textContent='Inscrivez des joueurs pour commencer';
+    document.getElementById('m-grid').innerHTML='';
+    document.getElementById('m-keyboard').innerHTML='';
+    return;
+  }
+  document.getElementById('m-result-area').innerHTML='';
+  setMsg('m-msg','');
+  motusInit();
+  motusUpdateCurrent();
+  renderMotusQueue();
+}
+
+function motusReveal(){
+  if(mWord)setMsg('m-msg','Le mot était : "'+mWord+'"','info');
+}
+
+function motusReset(){
+  mPlayers=[]; mCurrentPlayerIdx=0; mPhase='setup';
+  mWord=''; mAttempts=[]; mCurrentAttempt=''; mFixedLetters=[];
+  ['m-queue','m-grid','m-keyboard','m-result-area'].forEach(id=>document.getElementById(id).innerHTML='');
+  document.getElementById('m-current-player').textContent='—';
+  document.getElementById('m-gain-info').textContent='Inscrivez des joueurs pour commencer';
+  setMsg('m-msg',''); setMsg('m-add-msg','');
+}
+
+/* INIT */
+updateHomeStats();
+</script>
+</body>
+</html>
