@@ -550,7 +550,7 @@ function renderHistory() {
 }
 
 function clearHistory() {
-  if (confirm('Effacer tout l'historique ?')) {
+  if (confirm('Effacer tout l\'historique ?')) {
     gameHistory = [];
     saveHistory();
     renderHistory();
@@ -1189,7 +1189,7 @@ function motusSubmit() {
     mPhase = 'between'; renderMotusQueue(); setTimeout(motusNextPlayer, 4500);
   } else if (mAttempts.length >= 6) {
     p.done = true; p.won = false; p.gain = 0; p.mult = 0;
-    setMsg('m-msg', '❌ Non trouvé. C'était : "' + mWord + '"', 'err');
+    setMsg('m-msg', '❌ Non trouvé. C\'était : "' + mWord + '"', 'err');
     addHistoryEntry('MOTUS', p.name, p.bet, 'Non trouvé (' + mLen + ' lettres)', 0);
     mPhase = 'between'; renderMotusQueue(); setTimeout(motusNextPlayer, 2800);
   } else {
