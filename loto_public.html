@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"/>
+<title>Loto — Los Santos Events</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#05060c;--cyan:#00e5ff;--purple:#a855f7;--pink:#ec4899;
+  --gold:#f59e0b;--text:#d9e4ff;--dim:#737b97;
+  --display:'Bebas Neue',sans-serif;--mono:'Share Tech Mono',monospace;--body:'Nunito',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  min-height:100vh;width:100%;overflow-x:hidden;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 5%,rgba(0,229,255,.13),transparent 50%),
+    radial-gradient(ellipse 55% 40% at 80% 95%,rgba(236,72,153,.13),transparent 50%),
+    linear-gradient(160deg,#05060c,#080b16 50%,#0c0718);
+  color:var(--text);font-family:var(--body);
+  display:flex;align-items:center;justify-content:center;
+}
+.wrap{max-width:700px;width:100%;padding:40px 28px;text-align:center;}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:4px;color:var(--dim);text-transform:uppercase;margin-bottom:10px;}
+.logo-title{font-family:var(--display);font-size:68px;letter-spacing:8px;line-height:.92;background:linear-gradient(90deg,var(--cyan),var(--purple),var(--pink),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+.logo-sub{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:48px;}
+
+.jackpot-box{
+  position:relative;overflow:hidden;
+  background:rgba(17,21,34,.85);
+  border:2px solid rgba(245,158,11,.4);
+  border-radius:28px;padding:44px 36px 40px;
+  box-shadow:0 0 0 1px rgba(245,158,11,.08),0 30px 80px rgba(0,0,0,.55),inset 0 0 60px rgba(255,255,255,.02);
+  margin-bottom:28px;
+}
+.jackpot-box::before{content:'';position:absolute;inset:-60%;background:conic-gradient(from 180deg,transparent 60%,rgba(245,158,11,.09),transparent 65%,rgba(0,229,255,.06),transparent 70%);animation:spinBg 14s linear infinite;pointer-events:none;}
+.jackpot-box>*{position:relative;}
+@keyframes spinBg{to{transform:rotate(360deg)}}
+.jackpot-label{font-family:var(--mono);font-size:12px;letter-spacing:4px;color:rgba(255,255,255,.45);text-transform:uppercase;margin-bottom:14px;}
+.jackpot-amount{font-family:var(--display);letter-spacing:4px;color:var(--gold);line-height:1;text-shadow:0 0 40px rgba(245,158,11,.3);word-break:break-all;}
+.jackpot-amount.sz-lg{font-size:88px;}
+.jackpot-amount.sz-md{font-size:72px;}
+.jackpot-amount.sz-sm{font-size:54px;}
+.jackpot-pulse{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--gold);margin-left:10px;animation:pulse 1.8s ease-in-out infinite;vertical-align:middle;position:relative;top:-4px;}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(245,158,11,.5);}50%{transform:scale(1.2);box-shadow:0 0 0 8px rgba(245,158,11,0);}}
+
+.next-draw-box{background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.2);border-radius:18px;padding:28px 24px;margin-bottom:24px;}
+.next-draw-icon{font-size:40px;margin-bottom:12px;}
+.next-draw-title{font-family:var(--display);font-size:28px;letter-spacing:5px;color:var(--cyan);margin-bottom:10px;}
+.next-draw-date{font-family:var(--mono);font-size:15px;letter-spacing:2px;color:var(--text);margin-bottom:6px;}
+.next-draw-sub{font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--dim);}
+
+.countdown-wrap{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:22px 0 0;}
+.count-unit{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.count-val{font-family:var(--display);font-size:44px;letter-spacing:2px;color:var(--gold);line-height:1;min-width:60px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:6px 10px;}
+.count-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.count-sep{font-family:var(--display);font-size:40px;color:rgba(245,158,11,.3);line-height:1;padding-top:8px;}
+
+.rules-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px 22px;text-align:left;}
+.rules-title{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:14px;text-align:center;}
+.rule-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-family:var(--mono);font-size:11px;}
+.rule-row:last-child{border-bottom:none;}
+.rule-label{color:var(--dim);}
+.rule-val{color:var(--text);font-weight:700;}
+
+.footer{margin-top:28px;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.2);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Los Santos Events</div>
+  <div class="logo-title">LOTO</div>
+  <div class="logo-sub">Tirage officiel</div>
+
+  <div class="jackpot-box">
+    <div class="jackpot-label">🏆 Cagnotte en jeu</div>
+    <div class="jackpot-amount sz-lg" id="jackpot-amount">—</div>
+    <span class="jackpot-pulse"></span>
+  </div>
+
+  <div class="next-draw-box">
+    <div class="next-draw-icon">📅</div>
+    <div class="next-draw-title">PROCHAIN TIRAGE</div>
+    <div class="next-draw-date" id="next-draw-date">Dimanche à 22h00</div>
+    <div class="next-draw-sub">Le tirage est effectué en direct chaque dimanche soir</div>
+    <div class="countdown-wrap">
+      <div class="count-unit"><div class="count-val" id="cd-j">--</div><div class="count-lbl">Jours</div></div>
+      <div class="count-sep">:</div>
+      <div class="count-unit"><div class="count-val" id="cd-h">--</div><div class="count-lbl">Heures</div></div>
+      <div class="count-sep">:</div>
+      <div class="count-unit"><div class="count-val" id="cd-m">--</div><div class="count-lbl">Minutes</div></div>
+      <div class="count-sep">:</div>
+      <div class="count-unit"><div class="count-val" id="cd-s">--</div><div class="count-lbl">Secondes</div></div>
+    </div>
+  </div>
+
+  <div class="rules-box">
+    <div class="rules-title">Comment ça marche</div>
+    <div class="rule-row"><span class="rule-label">Prix d'une grille</span><span class="rule-val">5 000 $</span></div>
+    <div class="rule-row"><span class="rule-label">Numéros à choisir</span><span class="rule-val">5 numéros (1–40) + 1 chance (1–10)</span></div>
+    <div class="rule-row"><span class="rule-label">Jackpot (5+C)</span><span class="rule-val">Cagnotte entière 🏆</span></div>
+    <div class="rule-row"><span class="rule-label">Report si pas de jackpot</span><span class="rule-val">+50 000 $ semaine suivante</span></div>
+    <div class="rule-row"><span class="rule-label">Tirage</span><span class="rule-val">Chaque dimanche à 22h00</span></div>
+  </div>
+
+  <div class="footer">Los Santos Events — Casino RP</div>
+</div>
+
+<script>
+var firebaseConfig={apiKey:"AIzaSyD5NSLRzJjPgONTL2jeQN9vSue5fPFxdjk",authDomain:"rp-casino.firebaseapp.com",projectId:"rp-casino",storageBucket:"rp-casino.firebasestorage.app",messagingSenderId:"524794910274",appId:"1:524794910274:web:b8ae7bc68de8cbdce8ffdb"};
+firebase.initializeApp(firebaseConfig);
+var db=firebase.firestore();
+
+function fmt(n){return Number(n||0).toLocaleString('fr-FR');}
+
+function setCagnotte(amount){
+  var el=document.getElementById('jackpot-amount');
+  if(!el)return;
+  var n=Number(amount)||100000;
+  var s=fmt(n)+' $';
+  el.textContent=s;
+  el.className='jackpot-amount '+(s.length>14?'sz-sm':s.length>10?'sz-md':'sz-lg');
+}
+
+/* ── Compte à rebours vers le prochain dimanche 22h ── */
+function getNextSunday22(){
+  var now=new Date();
+  var day=now.getDay(); // 0=dim
+  var d=(7-day)%7;
+  if(d===0){var t=new Date(now);t.setHours(22,0,0,0);if(now>=t)d=7;}
+  var next=new Date(now);next.setDate(now.getDate()+d);next.setHours(22,0,0,0);
+  return next;
+}
+function updateCountdown(){
+  var next=getNextSunday22(),now=new Date(),diff=Math.max(0,next-now);
+  var ts=Math.floor(diff/1000),sec=ts%60,min=Math.floor(ts/60)%60,hrs=Math.floor(ts/3600)%24,days=Math.floor(ts/86400);
+  function pad(v){return String(v).padStart(2,'0');}
+  var j=document.getElementById('cd-j'),h=document.getElementById('cd-h'),m=document.getElementById('cd-m'),s=document.getElementById('cd-s');
+  if(j)j.textContent=pad(days);if(h)h.textContent=pad(hrs);if(m)m.textContent=pad(min);if(s)s.textContent=pad(sec);
+  var de=document.getElementById('next-draw-date');
+  if(de){var ds=next.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});de.textContent=ds.charAt(0).toUpperCase()+ds.slice(1)+' à 22h00';}
+}
+setInterval(updateCountdown,1000);updateCountdown();
+
+/* ── Lecture de la cagnotte : priorité à loto_weeks semaine active ── */
+function getWeekId(){
+  var d=new Date(),jan1=new Date(d.getFullYear(),0,1);
+  var week=Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7);
+  return d.getFullYear()+'-W'+String(week).padStart(2,'0');
+}
+
+function watchCagnotte(weekId,depth){
+  if((depth||0)>5){setCagnotte(100000);return;} // sécurité anti-boucle
+  db.collection('loto_weeks').doc(weekId).onSnapshot(function(doc){
+    if(!doc.exists){
+      // Semaine pas encore créée → cagnotte de départ
+      setCagnotte(100000);
+      return;
+    }
+    var data=doc.data();
+    // Si archivée et qu'une semaine suivante existe, suivre la chaîne
+    if(data.archived && data.nextWeekId && data.nextWeekId!==weekId){
+      watchCagnotte(data.nextWeekId,(depth||0)+1);
+      return;
+    }
+    // Cagnotte de la semaine active (sans les inscriptions si draw=null)
+    var cagnotte=Number(data.cagnotte)||100000;
+    setCagnotte(cagnotte);
+  },function(){
+    // Fallback : lire depuis loto_public/current
+    db.collection('loto_public').doc('current').get().then(function(snap){
+      if(!snap.exists){setCagnotte(100000);return;}
+      var d2=snap.data();
+      var c=Number(d2.publicCagnotte||d2.cagnotte||100000);
+      setCagnotte(c);
+    }).catch(function(){setCagnotte(100000);});
+  });
+}
+
+watchCagnotte(getWeekId(),0);
+</script>
+</body>
+</html>
