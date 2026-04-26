@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"/>
+<title>Loto — Los Santos Events</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#05060c;--cyan:#00e5ff;--purple:#a855f7;--pink:#ec4899;
+  --gold:#f59e0b;--green:#10b981;--text:#d9e4ff;--dim:#737b97;
+  --display:'Bebas Neue',sans-serif;--mono:'Share Tech Mono',monospace;--body:'Nunito',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  min-height:100vh;width:100%;overflow-x:hidden;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 5%,rgba(0,229,255,.13),transparent 50%),
+    radial-gradient(ellipse 55% 40% at 80% 95%,rgba(236,72,153,.13),transparent 50%),
+    linear-gradient(160deg,#05060c,#080b16 50%,#0c0718);
+  color:var(--text);font-family:var(--body);
+}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+.wrap{max-width:960px;width:100%;padding:40px 20px 60px;margin:0 auto;text-align:center;}
+
+/* ── Header ── */
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:4px;color:var(--dim);text-transform:uppercase;margin-bottom:10px;}
+.logo-title{font-family:var(--display);font-size:68px;letter-spacing:8px;line-height:.92;background:linear-gradient(90deg,var(--cyan),var(--purple),var(--pink),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+.logo-sub{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:32px;}
+
+/* ── Status badge ── */
+.status-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:50px;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;}
+.status-waiting{background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);color:var(--cyan);}
+.status-drawing{background:rgba(236,72,153,.15);border:1px solid rgba(236,72,153,.5);color:var(--pink);animation:badgePulse 1s ease infinite;}
+.status-finished{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#34d399;}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 0 0 rgba(236,72,153,0);}50%{box-shadow:0 0 14px 2px rgba(236,72,153,.4);}}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-waiting{background:var(--cyan);}
+.dot-drawing{background:var(--pink);animation:dotBlink .8s ease infinite;}
+.dot-finished{background:#34d399;}
+@keyframes dotBlink{0%,100%{opacity:1;}50%{opacity:.2;}}
+
+/* ── Cagnotte ── */
+.jackpot-box{
+  position:relative;overflow:hidden;
+  background:rgba(17,21,34,.85);
+  border:2px solid rgba(245,158,11,.4);
+  border-radius:28px;padding:36px 36px 32px;
+  box-shadow:0 0 0 1px rgba(245,158,11,.08),0 30px 80px rgba(0,0,0,.55),inset 0 0 60px rgba(255,255,255,.02);
+  margin-bottom:24px;transition:border-color .4s;
+}
+.jackpot-box.updated{border-color:rgba(16,185,129,.6);}
+.jackpot-box::before{content:'';position:absolute;inset:-60%;background:conic-gradient(from 180deg,transparent 60%,rgba(245,158,11,.09),transparent 65%,rgba(0,229,255,.06),transparent 70%);animation:spinBg 14s linear infinite;pointer-events:none;}
+.jackpot-box>*{position:relative;}
+@keyframes spinBg{to{transform:rotate(360deg)}}
+.jackpot-label{font-family:var(--mono);font-size:12px;letter-spacing:4px;color:rgba(255,255,255,.45);text-transform:uppercase;margin-bottom:14px;}
+.jackpot-amount{font-family:var(--display);letter-spacing:4px;color:var(--gold);line-height:1;text-shadow:0 0 40px rgba(245,158,11,.3);word-break:break-all;transition:color .4s;}
+.jackpot-amount.sz-lg{font-size:88px;}.jackpot-amount.sz-md{font-size:72px;}.jackpot-amount.sz-sm{font-size:54px;}
+.jackpot-amount.next-week{color:var(--green);text-shadow:0 0 40px rgba(16,185,129,.4);}
+.jackpot-sub-label{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px;letter-spacing:1px;min-height:14px;}
+.jackpot-pulse{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--gold);margin-left:10px;animation:pulse 1.8s ease-in-out infinite;vertical-align:middle;position:relative;top:-4px;}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(245,158,11,.5);}50%{transform:scale(1.2);box-shadow:0 0 0 8px rgba(245,158,11,0);}}
+
+/* ── LIVE DRAW ── */
+#live-draw-section{display:none;margin-bottom:24px;}
+.live-wrap{background:rgba(236,72,153,.06);border:1px solid rgba(236,72,153,.2);border-radius:18px;padding:28px 20px;}
+.live-label{display:inline-block;font-family:var(--display);font-size:18px;letter-spacing:4px;padding:6px 18px;border-radius:8px;margin-bottom:20px;}
+.live-label.drawing{background:rgba(236,72,153,.15);border:1px solid rgba(236,72,153,.4);color:var(--pink);animation:badgePulse 1s ease infinite;}
+.live-label.finished{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.4);color:#34d399;animation:none;}
+
+/* Boules en direct - grandes et bien visibles */
+.draw-balls-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;min-height:96px;align-items:center;margin:16px 0 12px;}
+.pub-ball{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:28px;position:relative;overflow:hidden;flex-shrink:0;}
+.pub-ball::before{content:'';position:absolute;top:14%;left:24%;width:28%;height:18%;background:rgba(255,255,255,.35);border-radius:50%;filter:blur(3px);}
+.pub-ball.num{background:radial-gradient(circle at 35% 35%,rgba(0,229,255,.45),rgba(0,100,160,.28));border:3px solid var(--cyan);color:#fff;box-shadow:0 0 28px rgba(0,229,255,.45),inset 0 0 14px rgba(0,0,0,.3);}
+.pub-ball.chance{background:radial-gradient(circle at 35% 35%,rgba(236,72,153,.45),rgba(120,20,80,.28));border:3px solid var(--pink);color:#fff;box-shadow:0 0 28px rgba(236,72,153,.45),inset 0 0 14px rgba(0,0,0,.3);}
+.pub-ball.placeholder{background:rgba(255,255,255,.04);border:2px dashed rgba(255,255,255,.15);color:rgba(255,255,255,.2);font-size:22px;}
+.pub-ball.placeholder.chance-ph{border-color:rgba(236,72,153,.2);color:rgba(236,72,153,.3);}
+.ball-sep{font-family:var(--display);font-size:32px;color:rgba(255,255,255,.2);display:flex;align-items:center;flex-shrink:0;}
+@keyframes ballPop{
+  0%{transform:scale(0) rotate(-180deg);opacity:0;}
+  60%{transform:scale(1.22) rotate(8deg);opacity:1;}
+  80%{transform:scale(0.93) rotate(-3deg);}
+  100%{transform:scale(1) rotate(0);opacity:1;}
+}
+.ball-pop{animation:ballPop .6s cubic-bezier(.34,1.56,.64,1) forwards;opacity:0;}
+
+/* Spinning indicator */
+.spin-wrap{text-align:center;padding:12px 0;}
+.spin-icon{font-size:44px;display:inline-block;animation:spinAnim .7s linear infinite;}
+@keyframes spinAnim{to{transform:rotate(360deg)}}
+.spin-label{font-family:var(--display);font-size:20px;letter-spacing:4px;color:var(--pink);margin-top:6px;}
+.current-num{font-family:var(--display);font-size:72px;letter-spacing:4px;margin:6px 0;line-height:1;}
+@keyframes numReveal{from{transform:scale(0.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+.num-reveal{animation:numReveal .5s cubic-bezier(.34,1.56,.64,1) both;}
+.draw-progress{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:4px;letter-spacing:1px;}
+
+/* ── RESULTS ── */
+#results-section{display:none;margin-bottom:28px;}
+
+/* Jackpot winner */
+.jackpot-winner-box{
+  text-align:center;padding:36px 24px;
+  background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(236,72,153,.1));
+  border:2px solid var(--gold);border-radius:20px;margin-bottom:24px;
+  position:relative;overflow:hidden;
+  animation:jackpotPulse 1.5s ease infinite;
+}
+@keyframes jackpotPulse{0%,100%{box-shadow:0 0 20px rgba(245,158,11,.3);}50%{box-shadow:0 0 50px rgba(245,158,11,.6);}}
+.jackpot-winner-title{font-family:var(--display);font-size:28px;letter-spacing:5px;color:var(--gold);margin-bottom:6px;}
+.jackpot-winner-name{font-family:var(--display);font-size:52px;letter-spacing:3px;color:#fff;margin-bottom:10px;line-height:1.1;}
+.jackpot-winner-amount{font-family:var(--display);font-size:68px;letter-spacing:2px;color:var(--pink);text-shadow:0 0 40px rgba(236,72,153,.5);}
+.jackpot-winner-grille{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px;}
+
+/* No jackpot box */
+.no-jackpot-box{background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.25);border-radius:14px;padding:20px;margin-bottom:20px;}
+.no-jackpot-title{font-family:var(--display);font-size:22px;letter-spacing:3px;color:var(--cyan);margin-bottom:6px;}
+.no-jackpot-sub{font-family:var(--mono);font-size:12px;color:var(--dim);}
+
+/* Numéros gagnants */
+.drawn-section{margin-bottom:24px;}
+.drawn-label{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:14px;}
+.drawn-nums-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.drawn-ball-sm{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:20px;}
+.drawn-ball-sm.num{background:rgba(0,229,255,.15);border:2px solid var(--cyan);color:var(--cyan);}
+.drawn-ball-sm.chance{background:rgba(236,72,153,.15);border:2px solid var(--pink);color:var(--pink);}
+
+/* Gagnants section - PLUS GRAND */
+.winners-section-title{font-family:var(--display);font-size:28px;letter-spacing:5px;color:var(--gold);margin-bottom:22px;}
+.winners-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:18px;text-align:left;margin-bottom:20px;}
+.winner-card{border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px;}
+.winner-card.jackpot{background:rgba(236,72,153,.1);border:2px solid rgba(236,72,153,.5);box-shadow:0 0 24px rgba(236,72,153,.2);}
+.winner-card.prize{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);}
+.winner-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+.winner-name{font-family:var(--display);font-size:26px;letter-spacing:1px;color:#fff;line-height:1.1;}
+.winner-palier{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:4px;letter-spacing:.5px;}
+.winner-amount{font-family:var(--display);font-size:36px;letter-spacing:2px;white-space:nowrap;flex-shrink:0;}
+.winner-amount.prize{color:var(--gold);}
+.winner-amount.jackpot{color:var(--pink);}
+.grille-balls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.grille-ball{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:700;flex-shrink:0;}
+.grille-ball.normal{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);}
+.grille-ball.match-num{background:rgba(0,229,255,.25);border:2px solid var(--cyan);color:var(--cyan);box-shadow:0 0 12px rgba(0,229,255,.4);}
+.grille-ball.match-chance{background:rgba(236,72,153,.25);border:2px solid var(--pink);color:var(--pink);box-shadow:0 0 12px rgba(236,72,153,.4);}
+.grille-sep{width:1px;height:28px;background:rgba(255,255,255,.15);margin:0 2px;}
+.no-winners-msg{font-family:var(--mono);font-size:13px;color:var(--dim);padding:24px;text-align:center;border:1px solid rgba(255,255,255,.07);border-radius:12px;}
+
+/* ── Countdown ── */
+.next-draw-box{background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.2);border-radius:18px;padding:24px 20px;margin-bottom:24px;}
+.next-draw-icon{font-size:36px;margin-bottom:10px;}
+.next-draw-title{font-family:var(--display);font-size:26px;letter-spacing:5px;color:var(--cyan);margin-bottom:8px;}
+.next-draw-date{font-family:var(--mono);font-size:14px;letter-spacing:2px;color:var(--text);margin-bottom:4px;}
+.next-draw-sub{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--dim);}
+.countdown-wrap{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:18px 0 0;}
+.count-unit{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.count-val{font-family:var(--display);font-size:42px;letter-spacing:2px;color:var(--gold);line-height:1;min-width:58px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:6px 10px;}
+.count-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.count-sep{font-family:var(--display);font-size:38px;color:rgba(245,158,11,.3);line-height:1;padding-top:8px;}
+
+/* ── Rules ── */
+.rules-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px 22px;text-align:left;margin-bottom:24px;}
+.rules-title{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:14px;text-align:center;}
+.rule-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-family:var(--mono);font-size:11px;}
+.rule-row:last-child{border-bottom:none;}
+.rule-label{color:var(--dim);}.rule-val{color:var(--text);font-weight:700;}
+
+/* ── Grilles participants publiques ── */
+.public-grids-box{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px;margin-bottom:24px;text-align:left;}
+.public-grids-head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+.public-grids-title{font-family:var(--display);font-size:26px;letter-spacing:4px;color:var(--cyan);}
+.public-grids-search{min-width:260px;flex:1;max-width:420px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:999px;color:var(--text);font-family:var(--mono);font-size:12px;padding:11px 16px;outline:none;}
+.public-grids-search:focus{border-color:rgba(0,229,255,.45);}
+.public-grids-count{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:10px;}
+.public-grids-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;}
+.public-grid-card{background:rgba(17,21,34,.72);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;}
+.public-grid-name{font-family:var(--display);font-size:22px;letter-spacing:1px;color:#fff;line-height:1.05;margin-bottom:4px;}
+.public-grid-meta{font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:10px;}
+.public-grid-balls{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.public-grid-ball{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700;background:rgba(0,229,255,.12);border:1.5px solid rgba(0,229,255,.45);color:var(--cyan);}
+.public-grid-ball.chance{background:rgba(236,72,153,.12);border-color:rgba(236,72,153,.5);color:var(--pink);}
+.public-grid-sep{width:1px;height:24px;background:rgba(255,255,255,.14);margin:0 2px;}
+.public-grids-empty{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center;padding:16px;border:1px dashed rgba(255,255,255,.1);border-radius:12px;}
+
+.footer{margin-top:20px;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.2);}
+
+/* ── Confetti ── */
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:999;display:none;}
+@keyframes sparkle{0%,100%{opacity:0;transform:scale(0);}50%{opacity:1;transform:scale(1);}}
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+<div class="wrap">
+  <div class="kicker">Los Santos Events</div>
+  <div class="logo-title">LOTO</div>
+  <div class="logo-sub">Tirage officiel — En direct</div>
+
+  <!-- Status -->
+  <div id="status-badge" class="status-badge status-waiting">
+    <span class="status-dot dot-waiting" id="status-dot"></span>
+    <span id="status-text">En attente du tirage</span>
+  </div>
+
+  <!-- Cagnotte -->
+  <div class="jackpot-box" id="jackpot-box">
+    <div class="jackpot-label" id="jackpot-label">🏆 Cagnotte en jeu</div>
+    <div class="jackpot-amount sz-lg" id="jackpot-amount">—</div>
+    <div class="jackpot-sub-label" id="jackpot-sub-label"></div>
+    <span class="jackpot-pulse" id="jackpot-pulse"></span>
+  </div>
+
+  <!-- TIRAGE EN DIRECT -->
+  <section id="live-draw-section">
+    <div class="live-wrap">
+      <div><span class="live-label drawing" id="live-label">🔴 TIRAGE EN COURS</span></div>
+
+      <!-- Indicateur roue en rotation -->
+      <div id="spin-wrap" class="spin-wrap" style="display:none;">
+        <div class="spin-icon">🎡</div>
+        <div class="spin-label" id="spin-label">Rotation de la roue…</div>
+        <div id="current-num" class="current-num" style="display:none;"></div>
+      </div>
+
+      <!-- Boules tirées -->
+      <div class="draw-balls-row" id="draw-balls-row">
+        <div class="pub-ball placeholder" id="ph0">?</div>
+        <div class="pub-ball placeholder" id="ph1">?</div>
+        <div class="pub-ball placeholder" id="ph2">?</div>
+        <div class="pub-ball placeholder" id="ph3">?</div>
+        <div class="pub-ball placeholder" id="ph4">?</div>
+        <div class="ball-sep">+</div>
+        <div class="pub-ball placeholder chance-ph" id="ph5">C</div>
+      </div>
+
+      <div class="draw-progress" id="draw-progress">En attente du premier numéro…</div>
+    </div>
+  </section>
+
+  <!-- RÉSULTATS APRÈS TIRAGE -->
+  <section id="results-section">
+    <!-- Jackpot winner -->
+    <div id="jackpot-winner-box" style="display:none;" class="jackpot-winner-box">
+      <div style="font-size:52px;margin-bottom:10px;">🏆</div>
+      <div class="jackpot-winner-title">JACKPOT REMPORTÉ !</div>
+      <div class="jackpot-winner-name" id="jackpot-winner-name">—</div>
+      <div class="jackpot-winner-amount" id="jackpot-winner-amount">—</div>
+      <div class="jackpot-winner-grille" id="jackpot-winner-grille"></div>
+    </div>
+
+    <!-- Pas de jackpot -->
+    <div id="no-jackpot-box" style="display:none;" class="no-jackpot-box">
+      <div class="no-jackpot-title">Pas de jackpot cette semaine</div>
+      <div class="no-jackpot-sub" id="next-cagnotte-label">La cagnotte est reportée</div>
+    </div>
+
+    <!-- Numéros tirés -->
+    <div class="drawn-section">
+      <div class="drawn-label">Numéros gagnants du tirage</div>
+      <div class="drawn-nums-row" id="drawn-nums-final"></div>
+    </div>
+
+    <!-- Tous les gagnants -->
+    <div id="winners-section">
+      <div class="winners-section-title">🎖 GAGNANTS DE LA SEMAINE</div>
+      <div class="winners-grid" id="winners-grid"></div>
+    </div>
+  </section>
+
+  <!-- Compte à rebours -->
+  <div class="next-draw-box" id="countdown-box">
+    <div class="next-draw-icon">📅</div>
+    <div class="next-draw-title">PROCHAIN TIRAGE</div>
+    <div class="next-draw-date" id="next-draw-date">Dimanche à 22h00</div>
+    <div class="next-draw-sub">Le tirage est effectué en direct chaque dimanche soir</div>
+    <div class="countdown-wrap">
+      <div class="count-unit"><div class="count-val" id="cd-j">--</div><div class="count-lbl">Jours</div></div>
+      <div class="count-sep">:</div>
+      <div class="count-unit"><div class="count-val" id="cd-h">--</div><div class="count-lbl">Heures</div></div>
+      <div class="count-sep">:</div>
+      <div class="count-unit"><div class="count-val" id="cd-m">--</div><div class="count-lbl">Minutes</div></div>
+      <div class="count-sep">:</div>
+      <div class="count-unit"><div class="count-val" id="cd-s">--</div><div class="count-lbl">Secondes</div></div>
+    </div>
+  </div>
+
+
+  <!-- Grilles participants -->
+  <div class="public-grids-box" id="public-grids-box">
+    <div class="public-grids-head">
+      <div class="public-grids-title">📋 GRILLES PARTICIPANTS</div>
+      <input class="public-grids-search" id="public-grid-search" type="text" placeholder="Rechercher par prénom ou nom..." oninput="renderPublicGrids()"/>
+    </div>
+    <div class="public-grids-count" id="public-grids-count"></div>
+    <div class="public-grids-list" id="public-grids-list"></div>
+  </div>
+
+  <div class="rules-box">
+    <div class="rules-title">Comment ça marche</div>
+    <div class="rule-row"><span class="rule-label">Prix d'une grille</span><span class="rule-val">2 000 $</span></div>
+    <div class="rule-row"><span class="rule-label">Numéros à choisir</span><span class="rule-val">5 numéros (1–40) + 1 chance (1–10)</span></div>
+    <div class="rule-row"><span class="rule-label">Jackpot (5+C)</span><span class="rule-val">Cagnotte entière 🏆</span></div>
+    <div class="rule-row"><span class="rule-label">Report si pas de jackpot</span><span class="rule-val">50% des recettes des grilles</span></div>
+    <div class="rule-row"><span class="rule-label">Tirage</span><span class="rule-val">Chaque dimanche à 22h00</span></div>
+    <div class="rule-row"><span class="rule-label">Probabilités Jackpot (5+C)</span><span class="rule-val">0,000015197% — 1 / 6 580 080</span></div>
+    <div class="rule-row"><span class="rule-label">Probabilités 5 numéros</span><span class="rule-val">0,000136776% — 1 / 731 120</span></div>
+    <div class="rule-row"><span class="rule-label">Probabilités 4+C</span><span class="rule-val">0,002659542% — 1 / 37 600</span></div>
+    <div class="rule-row"><span class="rule-label">Probabilités 4 numéros</span><span class="rule-val">0,023935879% — 1 / 4 178</span></div>
+    <div class="rule-row"><span class="rule-label">Probabilités 3+C</span><span class="rule-val">0,090424433% — 1 / 1 106</span></div>
+    <div class="rule-row"><span class="rule-label">Probabilités 3 numéros</span><span class="rule-val">0,813819893% — 1 / 123</span></div>
+    <div class="rule-row"><span class="rule-label">Probabilités 2+C</span><span class="rule-val">0,994668758% — 1 / 101</span></div>
+    <div class="rule-row"><span class="rule-label">Probabilités 2 numéros</span><span class="rule-val">8,952018820% — 1 / 11</span></div>
+    <div class="rule-row"><span class="rule-label">Probabilités 1+C</span><span class="rule-val">3,978675031% — 1 / 25</span></div>
+    <div class="rule-row"><span class="rule-label">Probabilités Chance seule</span><span class="rule-val">4,933557039% — 1 / 20</span></div>
+  </div>
+</div>
+
+<script>
+/* ══ FIREBASE ══ */
+var firebaseConfig={apiKey:"AIzaSyD5NSLRzJjPgONTL2jeQN9vSue5fPFxdjk",authDomain:"rp-casino.firebaseapp.com",projectId:"rp-casino",storageBucket:"rp-casino.firebasestorage.app",messagingSenderId:"524794910274",appId:"1:524794910274:web:b8ae7bc68de8cbdce8ffdb"};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+
+/* ══ UTILS ══ */
+function fmt(n){ return Number(n||0).toLocaleString('fr-FR'); }
+
+function setCagnotte(amount, subLabel, isNextWeek) {
+  var el = document.getElementById('jackpot-amount');
+  var sub = document.getElementById('jackpot-sub-label');
+  var box = document.getElementById('jackpot-box');
+  if (!el) return;
+  var n = Number(amount) || 100000;
+  var s = fmt(n) + ' $';
+  el.textContent = s;
+  el.className = 'jackpot-amount ' + (s.length > 14 ? 'sz-sm' : s.length > 10 ? 'sz-md' : 'sz-lg') + (isNextWeek ? ' next-week' : '');
+  if (sub) sub.textContent = subLabel || '';
+  if (box) {
+    if (isNextWeek) { box.classList.add('updated'); }
+    else { box.classList.remove('updated'); }
+  }
+}
+
+/* ══ COUNTDOWN ══ */
+function getNextSunday22() {
+  var now = new Date(), day = now.getDay(), d = (7 - day) % 7;
+  if (d === 0) { var t = new Date(now); t.setHours(22,0,0,0); if (now >= t) d = 7; }
+  var next = new Date(now); next.setDate(now.getDate() + d); next.setHours(22,0,0,0);
+  return next;
+}
+function updateCountdown() {
+  var next = getNextSunday22(), now = new Date(), diff = Math.max(0, next - now);
+  var ts = Math.floor(diff / 1000), sec = ts%60, min = Math.floor(ts/60)%60, hrs = Math.floor(ts/3600)%24, days = Math.floor(ts/86400);
+  function pad(v){ return String(v).padStart(2,'0'); }
+  ['j','h','m','s'].forEach(function(k,i){ var el=document.getElementById('cd-'+k); if(el) el.textContent=pad([days,hrs,min,sec][i]); });
+  var de = document.getElementById('next-draw-date');
+  if (de) { var ds = next.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}); de.textContent = ds.charAt(0).toUpperCase()+ds.slice(1)+' à 22h00'; }
+}
+setInterval(updateCountdown, 1000); updateCountdown();
+
+/* ══ STATE ══ */
+var prevRevealIndex = -1;
+var participants = [];
+var pageState = 'waiting';
+
+function escHtml(v){
+  return String(v == null ? '' : v).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function renderPublicGrids(){
+  var list = document.getElementById('public-grids-list');
+  var count = document.getElementById('public-grids-count');
+  var search = document.getElementById('public-grid-search');
+  if(!list) return;
+  var q = search ? search.value.trim().toLowerCase() : '';
+  var data = (participants || []).filter(function(p){
+    var name = ((p.prenom || '') + ' ' + (p.nom || '')).trim().toLowerCase();
+    return !q || name.indexOf(q) >= 0 || String(p.prenom || '').toLowerCase().indexOf(q) >= 0 || String(p.nom || '').toLowerCase().indexOf(q) >= 0;
+  });
+  if(count) count.textContent = data.length + ' grille(s) affichée(s) sur ' + (participants || []).length;
+  if(!data.length){
+    list.innerHTML = '<div class="public-grids-empty">Aucune grille trouvée.</div>';
+    return;
+  }
+  var html = '';
+  data.forEach(function(p){
+    var name = escHtml(((p.prenom || '') + ' ' + (p.nom || '')).trim() || 'Participant');
+    var meta = (p.nbGrids && p.nbGrids > 1) ? 'Grille ' + (p.grille || 1) + ' / ' + p.nbGrids : 'Grille 1 / 1';
+    if(p.flash) meta += ' · Flash';
+    var balls = '';
+    (p.nums || []).forEach(function(n){ balls += '<span class="public-grid-ball">' + escHtml(n) + '</span>'; });
+    balls += '<span class="public-grid-sep"></span><span class="public-grid-ball chance">' + escHtml(p.chance || '?') + '</span>';
+    html += '<div class="public-grid-card" data-name="' + escHtml(name.toLowerCase()) + '">'
+      + '<div class="public-grid-name">' + name + '</div>'
+      + '<div class="public-grid-meta">' + escHtml(meta) + '</div>'
+      + '<div class="public-grid-balls">' + balls + '</div>'
+      + '</div>';
+  });
+  list.innerHTML = html;
+}
+
+
+/* ══ UI STATE ══ */
+function setPageState(state) {
+  pageState = state;
+  var badge = document.getElementById('status-badge');
+  var dot = document.getElementById('status-dot');
+  var txt = document.getElementById('status-text');
+  var live = document.getElementById('live-draw-section');
+  var res = document.getElementById('results-section');
+  var cd = document.getElementById('countdown-box');
+  var lbl = document.getElementById('live-label');
+  var lbl2 = document.getElementById('jackpot-label');
+  var pulse = document.getElementById('jackpot-pulse');
+
+  if (state === 'waiting') {
+    badge.className = 'status-badge status-waiting';
+    dot.className = 'status-dot dot-waiting';
+    txt.textContent = 'En attente du tirage';
+    live.style.display = 'none';
+    res.style.display = 'none';
+    cd.style.display = '';
+    if (lbl2) lbl2.textContent = '🏆 Cagnotte en jeu';
+    if (pulse) pulse.style.display = '';
+  } else if (state === 'drawing') {
+    badge.className = 'status-badge status-drawing';
+    dot.className = 'status-dot dot-drawing';
+    txt.textContent = '🔴 Tirage en cours — LIVE';
+    live.style.display = '';
+    if (lbl) { lbl.className = 'live-label drawing'; lbl.textContent = '🔴 TIRAGE EN COURS'; }
+    res.style.display = 'none';
+    cd.style.display = 'none';
+    if (lbl2) lbl2.textContent = '🏆 Cagnotte en jeu';
+    if (pulse) pulse.style.display = '';
+  } else if (state === 'finished') {
+    badge.className = 'status-badge status-finished';
+    dot.className = 'status-dot dot-finished';
+    txt.textContent = '✅ Tirage terminé';
+    live.style.display = '';
+    if (lbl) { lbl.className = 'live-label finished'; lbl.textContent = '✅ TIRAGE TERMINÉ'; }
+    res.style.display = '';
+    cd.style.display = '';
+    document.getElementById('spin-wrap').style.display = 'none';
+    document.getElementById('draw-progress').textContent = 'Tous les numéros ont été tirés.';
+  }
+}
+
+/* ══ BOULES EN DIRECT ══ */
+function renderBalls(nums, chance, drawnCount) {
+  var count = (drawnCount === undefined || drawnCount < 0) ? 0 : drawnCount;
+  for (var i = 0; i < 5; i++) {
+    var el = document.getElementById('ph' + i);
+    if (!el) continue;
+    if (nums && i < nums.length && i < count) {
+      if (!el.classList.contains('num')) {
+        el.className = 'pub-ball num ball-pop';
+        setTimeout((function(e){ return function(){ e.classList.remove('ball-pop'); }; })(el), 700);
+      }
+      el.textContent = nums[i];
+    } else {
+      el.className = 'pub-ball placeholder';
+      el.textContent = '?';
+    }
+  }
+  var chEl = document.getElementById('ph5');
+  if (chEl) {
+    if (chance && count > (nums ? nums.length : 5)) {
+      if (!chEl.classList.contains('chance')) {
+        chEl.className = 'pub-ball chance ball-pop';
+        setTimeout(function(){ chEl.classList.remove('ball-pop'); }, 700);
+      }
+      chEl.textContent = chance;
+    } else {
+      chEl.className = 'pub-ball placeholder chance-ph';
+      chEl.textContent = 'C';
+    }
+  }
+}
+
+function showSpinning(isChance, num) {
+  var wrap = document.getElementById('spin-wrap');
+  var lbl = document.getElementById('spin-label');
+  var numEl = document.getElementById('current-num');
+  wrap.style.display = '';
+  if (num !== undefined) {
+    lbl.textContent = isChance ? '🎯 Numéro Chance :' : '🎯 Numéro tiré :';
+    numEl.style.display = '';
+    numEl.className = 'current-num num-reveal';
+    numEl.style.color = isChance ? 'var(--pink)' : 'var(--gold)';
+    numEl.textContent = num;
+    numEl.style.animation = 'none';
+    void numEl.offsetWidth;
+    numEl.style.animation = '';
+    numEl.className = 'current-num num-reveal';
+  } else {
+    lbl.textContent = isChance ? '🎡 Roue Chance en rotation…' : '🎡 Roue Principale en rotation…';
+    numEl.style.display = 'none';
+  }
+}
+
+/* ══ RÉSULTATS : TOUS LES GAGNANTS ══ */
+function renderResults(draw, jackpotWon, jackpotWinnerName, nextCagnotte, winners, parts) {
+  var nums = draw.nums || [];
+  var chance = draw.chance;
+
+  /* — Numéros finaux — */
+  var dnRow = document.getElementById('drawn-nums-final');
+  if (dnRow) {
+    var h = '';
+    nums.forEach(function(n){ h += '<div class="drawn-ball-sm num">' + n + '</div>'; });
+    h += '<div style="font-family:var(--display);font-size:24px;color:rgba(255,255,255,.3);display:flex;align-items:center;margin:0 4px;">+</div>';
+    h += '<div class="drawn-ball-sm chance">' + chance + '</div>';
+    dnRow.innerHTML = h;
+  }
+
+  /* — Jackpot — */
+  var jpBox = document.getElementById('jackpot-winner-box');
+  var njBox = document.getElementById('no-jackpot-box');
+  if (jackpotWon && jackpotWinnerName) {
+    jpBox.style.display = '';
+    njBox.style.display = 'none';
+    document.getElementById('jackpot-winner-name').textContent = jackpotWinnerName;
+    var jpEntry = winners.find(function(w){ return w.label && w.label.indexOf('Jackpot') === 0; });
+    document.getElementById('jackpot-winner-amount').textContent = jpEntry ? '+' + fmt(jpEntry.amount) + ' $' : '';
+    var jpPart = parts.find(function(p){ return (p.prenom + ' ' + p.nom) === jackpotWinnerName; });
+    if (jpPart) {
+      var gh = '';
+      (jpPart.nums || []).forEach(function(n){ var hit = nums.indexOf(n) >= 0; gh += '<div class="grille-ball ' + (hit ? 'match-num' : 'normal') + '">' + n + '</div>'; });
+      gh += '<div class="grille-sep"></div>';
+      var chHit = jpPart.chance === chance;
+      gh += '<div class="grille-ball ' + (chHit ? 'match-chance' : 'normal') + '">' + (jpPart.chance||'?') + '</div>';
+      document.getElementById('jackpot-winner-grille').innerHTML = gh;
+    }
+    showConfetti();
+  } else {
+    jpBox.style.display = 'none';
+    njBox.style.display = '';
+    var nc = nextCagnotte ? fmt(nextCagnotte) + ' $' : '—';
+    document.getElementById('next-cagnotte-label').textContent = 'Cagnotte reportée — Semaine prochaine : ' + nc;
+    /* Mettre à jour l'affichage de la cagnotte avec la nouvelle valeur */
+    if (nextCagnotte) {
+      setCagnotte(nextCagnotte, '↑ Cagnotte de la semaine prochaine', true);
+    }
+  }
+
+  /* — TOUS les gagnants (y compris petits lots) — */
+  var grid = document.getElementById('winners-grid');
+  var allWinners = buildAllWinners(nums, chance, winners, parts);
+
+  if (!allWinners.length) {
+    grid.innerHTML = '<div class="no-winners-msg">Aucun gagnant cette semaine — la cagnotte est reportée.</div>';
+    return;
+  }
+
+  /* Trier : jackpot en premier, puis par montant décroissant */
+  allWinners.sort(function(a,b){
+    if (a.isJp && !b.isJp) return -1;
+    if (!a.isJp && b.isJp) return 1;
+    return b.amount - a.amount;
+  });
+
+  var gh = '';
+  allWinners.forEach(function(w) {
+    var grilleHtml = '';
+    if (w.nums && w.nums.length) {
+      grilleHtml = '<div class="grille-balls">';
+      w.nums.forEach(function(n){ var hit = nums.indexOf(n) >= 0; grilleHtml += '<div class="grille-ball ' + (hit ? 'match-num' : 'normal') + '">' + n + '</div>'; });
+      grilleHtml += '<div class="grille-sep"></div>';
+      var chHit = (w.chance !== undefined && w.chance === chance);
+      grilleHtml += '<div class="grille-ball ' + (chHit ? 'match-chance' : 'normal') + '">' + (w.chance !== undefined ? w.chance : '?') + '</div>';
+      grilleHtml += '</div>';
+    }
+    gh += '<div class="winner-card ' + (w.isJp ? 'jackpot' : 'prize') + '">'
+      + '<div class="winner-header">'
+      + '<div><div class="winner-name">' + w.name + '</div><div class="winner-palier">' + w.label + '</div></div>'
+      + '<div class="winner-amount ' + (w.isJp ? 'jackpot' : 'prize') + '">+' + fmt(w.amount) + '$</div>'
+      + '</div>'
+      + grilleHtml
+      + '</div>';
+  });
+  grid.innerHTML = gh;
+}
+
+function buildAllWinners(nums, chance, winnersFromDb, parts) {
+  /* Priorité aux données de participants (détails de grille disponibles) */
+  var result = [];
+  var seen = {};
+
+  parts.forEach(function(p) {
+    var matchNums = (p.nums || []).filter(function(n){ return nums.indexOf(n) >= 0; }).length;
+    var matchChance = (p.chance === chance) ? 1 : 0;
+    var label = '', amount = 0, isJp = false;
+
+    if      (matchNums===5 && matchChance) { label='Jackpot (5+C)';   isJp=true; }
+    else if (matchNums===5)                { label='5 numéros'; }
+    else if (matchNums===4 && matchChance) { label='4 numéros + Chance'; }
+    else if (matchNums===4)                { label='4 numéros'; }
+    else if (matchNums===3 && matchChance) { label='3 numéros + Chance'; }
+    else if (matchNums===3)                { label='3 numéros'; }
+    else if (matchNums===2 && matchChance) { label='2 numéros + Chance'; }
+    else if (matchNums===2)                { label='2 numéros'; }
+    else if (matchNums===1 && matchChance) { label='1 numéro + Chance'; }
+    else if (matchChance)                  { label='Numéro Chance'; }
+    else return; /* Aucun gain */
+
+    /* Chercher le montant dans la liste de winners Firebase */
+    var name = (p.prenom || '') + ' ' + (p.nom || '');
+    name = name.trim() || '—';
+    var wEntry = winnersFromDb.find(function(w){ return w.name && w.name.trim() === name && (!w.label || w.label === label || (isJp && w.label && w.label.indexOf('Jackpot') === 0)); });
+    amount = wEntry ? (wEntry.amount || 0) : (p.gain && p.gain.amount) || 0;
+
+    if (amount <= 0 && !isJp) return;
+
+    seen[name + label] = true;
+    result.push({ name: name, label: label, amount: amount, isJp: isJp, nums: p.nums || [], chance: p.chance });
+  });
+
+  /* Fallback : si pas de participants détaillés, utiliser la liste DB */
+  if (!result.length && winnersFromDb && winnersFromDb.length) {
+    winnersFromDb.forEach(function(w) {
+      if (!w.amount || w.amount <= 0) return;
+      var isJp = w.label && w.label.indexOf('Jackpot') === 0;
+      result.push({ name: w.name || '—', label: w.label || '', amount: w.amount, isJp: isJp, nums: [], chance: undefined });
+    });
+  }
+
+  return result;
+}
+
+/* ══ FIREBASE WATCH ══ */
+function watchPublicDraw() {
+  db.collection('loto_public').doc('current').onSnapshot(function(doc) {
+    if (!doc.exists) { setPageState('waiting'); return; }
+    var data = doc.data();
+    var status = data.status || 'waiting';
+    participants = data.participants || [];
+    renderPublicGrids();
+
+    if (status === 'waiting') {
+      setCagnotte(data.publicCagnotte || data.cagnotte || 100000, '', false);
+      setPageState('waiting');
+      prevRevealIndex = -1;
+
+    } else if (status === 'drawing') {
+      var draw = data.draw;
+      if (!draw) { setPageState('waiting'); return; }
+      setCagnotte(data.publicCagnotte || data.cagnotte || 100000, '', false);
+      setPageState('drawing');
+
+      var ri = typeof data.revealIndex === 'number' ? data.revealIndex : -1;
+      if (ri !== prevRevealIndex) {
+        prevRevealIndex = ri;
+        var dnums = draw.nums || [];
+        var dchance = draw.chance;
+        var total = dnums.length + 1;
+
+        if (ri < 0) {
+          renderBalls([], 0, 0);
+          document.getElementById('draw-progress').textContent = 'Le tirage commence…';
+          showSpinning(false);
+        } else if (ri < dnums.length) {
+          renderBalls(dnums, dchance, ri + 1);
+          showSpinning(false, dnums[ri]);
+          document.getElementById('draw-progress').textContent = (ri + 1) + ' / ' + total + ' numéros tirés…';
+        } else {
+          renderBalls(dnums, dchance, dnums.length + 1);
+          showSpinning(true, dchance);
+          document.getElementById('draw-progress').textContent = total + ' / ' + total + ' — Tirage complet !';
+        }
+      }
+
+    } else if (status === 'finished') {
+      var draw2 = data.draw;
+      if (!draw2) { setPageState('waiting'); return; }
+
+      /* Afficher toutes les boules finales */
+      var fnums = draw2.nums || [];
+      var fchance = draw2.chance;
+      renderBalls(fnums, fchance, fnums.length + 1);
+
+      /* Rendu des résultats */
+      renderResults(draw2, data.jackpotWon, data.jackpotWinnerName, data.nextWeekCagnotte, data.winners || [], participants);
+
+      setPageState('finished');
+    }
+  }, function() { watchWeekFallback(); });
+}
+
+function watchWeekFallback() {
+  function getWk(){ var d=new Date(),jan1=new Date(d.getFullYear(),0,1); return d.getFullYear()+'-W'+String(Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7)).padStart(2,'0'); }
+  db.collection('loto_weeks').doc(getWk()).onSnapshot(function(doc){
+    if (!doc.exists) { setCagnotte(100000,'',false); return; }
+    var data = doc.data();
+    if (data.archived && data.nextWeekId) { watchWeekFallback(); return; }
+    setCagnotte(data.cagnotte || 100000,'',false);
+  }, function(){ setCagnotte(100000,'',false); });
+}
+
+/* ══ CONFETTI ══ */
+function showConfetti() {
+  var canvas = document.getElementById('confetti-canvas');
+  canvas.style.display = 'block';
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  var parts = [], colors = ['#00e5ff','#a855f7','#ec4899','#f59e0b','#10b981','#f1f5ff'];
+  for (var i=0;i<180;i++) parts.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*12+4,h:Math.random()*7+3,color:colors[Math.floor(Math.random()*colors.length)],rot:Math.random()*360,rotV:Math.random()*6-3,vx:Math.random()*3-1.5,vy:Math.random()*3+2,opacity:Math.random()*.6+.4,circle:Math.random()>.5});
+  var anim;
+  function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); parts.forEach(function(p){ctx.save();ctx.globalAlpha=p.opacity;ctx.fillStyle=p.color;ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);if(p.circle){ctx.beginPath();ctx.arc(0,0,p.w/2,0,Math.PI*2);ctx.fill();}else{ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);}ctx.restore();p.y+=p.vy;p.x+=p.vx;p.rot+=p.rotV;if(p.y>canvas.height){p.y=-20;p.x=Math.random()*canvas.width;}}); anim=requestAnimationFrame(draw); }
+  draw();
+  setTimeout(function(){ cancelAnimationFrame(anim); canvas.style.display='none'; ctx.clearRect(0,0,canvas.width,canvas.height); }, 9000);
+}
+
+/* ══ INIT ══ */
+watchPublicDraw();
+</script>
+</body>
+</html>
